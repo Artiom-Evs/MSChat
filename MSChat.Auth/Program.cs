@@ -1,6 +1,12 @@
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddOrchardCms()
+    .AddDatabaseShellsConfiguration();
+
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.UseStaticFiles();
+app.UseOrchardCore();
 
 app.Run();
