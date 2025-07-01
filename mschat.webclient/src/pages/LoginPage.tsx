@@ -9,10 +9,10 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       window.location.hash = '#/';
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     } finally {
       setLoading(false);

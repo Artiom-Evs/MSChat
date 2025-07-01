@@ -8,7 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <SpaRoot>..\mschat.webclient</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>https://localhost:51188</SpaProxyServerUrl>
+    <SpaProxyServerUrl>https://localhost:5100</SpaProxyServerUrl>
   </PropertyGroup>
 
   <ItemGroup>

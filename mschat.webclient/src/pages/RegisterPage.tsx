@@ -9,10 +9,10 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 const RegisterPage: React.FC = () => {
-  const { register } = useAuth();
+  const register = useAuthStore((state) => state.register);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +40,7 @@ const RegisterPage: React.FC = () => {
     try {
       await register(name, email, password);
       window.location.hash = '#/';
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);

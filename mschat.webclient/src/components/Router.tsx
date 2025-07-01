@@ -4,10 +4,10 @@ import RegisterPage from '../pages/RegisterPage';
 import DefaultPage from '../pages/DefaultPage';
 import ChatPage from '../pages/ChatPage';
 import Layout from './Layout';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores/authStore';
 
 const Router: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [currentRoute, setCurrentRoute] = useState(window.location.hash.slice(1) || '/');
 
   useEffect(() => {
