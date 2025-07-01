@@ -31,3 +31,6 @@ README.md
 
 # OrchardCore runtime files
 **/App_Data
+
+# claude-code settings
+.claude
