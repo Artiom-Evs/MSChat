@@ -39,7 +39,7 @@ const DefaultPage: React.FC = () => {
       } else {
         setError('Failed to load weather data');
       }
-    } catch (err) {
+    } catch {
       setError('Network error occurred');
     } finally {
       setLoading(false);

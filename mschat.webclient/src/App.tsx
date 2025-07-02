@@ -1,11 +1,14 @@
+import { HashRouter } from 'react-router-dom';
 import { ChatProvider } from './context/ChatContext';
 import Router from './components/Router';
 
 function App() {
   return (
-    <ChatProvider>
-      <Router />
-    </ChatProvider>
+    <HashRouter>
+      <ChatProvider>
+        <Router />
+      </ChatProvider>
+    </HashRouter>
   );
 }
 

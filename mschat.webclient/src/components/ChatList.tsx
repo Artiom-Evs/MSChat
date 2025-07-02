@@ -1,10 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   List,
   ListItem,
   ListItemButton,
-  ListItemText,
   Typography,
   Chip,
 } from '@mui/material';
@@ -12,10 +12,11 @@ import { useChat } from '../context/ChatContext';
 
 const ChatList: React.FC = () => {
   const { chats, selectedChatId, selectChat } = useChat();
+  const navigate = useNavigate();
 
   const handleChatSelect = (chatId: string) => {
     selectChat(chatId);
-    window.location.hash = '#/chat';
+    navigate('/chat');
   };
 
   return (

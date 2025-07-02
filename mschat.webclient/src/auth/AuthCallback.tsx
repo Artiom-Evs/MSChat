@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 
 const AuthCallback: React.FC = () => {
   const { userManager, setUser } = useAuthStore();
+  const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,8 +16,7 @@ const AuthCallback: React.FC = () => {
         
         if (user) {
           setUser(user);
-          window.history.replaceState({}, document.title, '/');
-          window.location.href = '/';
+          navigate('/', { replace: true });
         } else {
           setError('Authentication failed: No user returned');
         }
@@ -28,7 +29,7 @@ const AuthCallback: React.FC = () => {
     };
 
     handleCallback();
-  }, [userManager, setUser]);
+  }, [userManager, setUser, navigate]);
 
   if (isProcessing) {
     return (
@@ -68,9 +69,9 @@ const AuthCallback: React.FC = () => {
         <Typography variant="body1" sx={{ mb: 2 }}>
           {error}
         </Typography>
-        <button onClick={() => window.location.href = '/'}>
+        <Button variant="contained" onClick={() => navigate('/')}>
           Return to Home
-        </button>
+        </Button>
       </Box>
     );
   }

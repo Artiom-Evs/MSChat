@@ -12,7 +12,7 @@ import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import { useAuthStore } from '../stores/authStore';
 
 const UserProfile: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, login } = useAuthStore();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -28,30 +28,28 @@ const UserProfile: React.FC = () => {
     handleMenuClose();
   };
 
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
   if (!isAuthenticated || !user) {
     return (
       <Box sx={{ textAlign: 'center', py: 2 }}>
         <Typography variant="h6" gutterBottom color="text.secondary">
           Welcome to MSChat
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={() => window.location.hash = '#/login'}
-            sx={{ textTransform: 'none' }}
-          >
-            Sign In
-          </Button>
-          <Button
-            variant="outlined"
-            fullWidth
-            onClick={() => window.location.hash = '#/register'}
-            sx={{ textTransform: 'none' }}
-          >
-            Sign Up
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={handleLogin}
+          sx={{ textTransform: 'none' }}
+        >
+          Sign In
+        </Button>
       </Box>
     );
   }
