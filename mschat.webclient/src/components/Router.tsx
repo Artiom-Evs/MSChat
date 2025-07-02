@@ -65,7 +65,7 @@ const LoginPrompt: React.FC = () => {
 
 const Router: React.FC = () => {
   const { isAuthenticated, isLoading, initAuth } = useAuthStore();
-  const [currentRoute, setCurrentRoute] = useState(window.location.pathname);
+  const [currentRoute, setCurrentRoute] = useState(window.location.hash.slice(1) || window.location.pathname);
 
   useEffect(() => {
     initAuth();
@@ -73,11 +73,15 @@ const Router: React.FC = () => {
 
   useEffect(() => {
     const handleLocationChange = () => {
-      setCurrentRoute(window.location.pathname);
+      setCurrentRoute(window.location.hash.slice(1) || window.location.pathname);
     };
 
+    window.addEventListener('hashchange', handleLocationChange);
     window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
+    };
   }, []);
 
   if (isLoading) {
