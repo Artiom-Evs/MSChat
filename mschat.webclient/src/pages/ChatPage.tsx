@@ -1,11 +1,14 @@
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
+import { useParams } from 'react-router-dom';
 import { useChat } from '../context/ChatContext';
 
 const ChatPage: React.FC = () => {
-  const { chats, selectedChatId } = useChat();
+  const { id } = useParams<{ id: string }>();
+  const { chats } = useChat();
   
-  const selectedChat = chats.find(chat => chat.id === selectedChatId);
+  const chatId = id ? parseInt(id, 10) : null;
+  const selectedChat = chatId ? chats.find(chat => chat.id === chatId) : null;
 
   if (!selectedChat) {
     return (

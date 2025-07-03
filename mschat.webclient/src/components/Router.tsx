@@ -45,7 +45,7 @@ const Router: React.FC = () => {
         } 
       />
       <Route 
-        path="/chat" 
+        path="/chats/:id" 
         element={
           <ProtectedRoute>
             <ChatPage />

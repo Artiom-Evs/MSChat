@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   List,
@@ -11,20 +11,18 @@ import { useAuth } from '../auth/AuthContext';
 
 const ChatList: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const { chats, loading, selectedChatId, updateChats, selectChat } = useChat();
+  const { chats, loading, updateChats } = useChat();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
-    if (!isAuthenticated || loading) return;
+    if (!isAuthenticated) return;
     
-    updateChats().catch(error => {
-      console.error("Error while updating chats:", error.message);
-    });
+    updateChats();
   }, [isAuthenticated]);
   
   const handleChatSelect = (chatId: number) => {
-    selectChat(chatId);
-    navigate('/chat');
+    navigate(`/chats/${chatId}`);
   };
 
   return (
@@ -49,7 +47,7 @@ const ChatList: React.FC = () => {
           <ChatListItem
             key={chat.id}
             chat={chat}
-            isSelected={selectedChatId === chat.id}
+            isSelected={id === chat.id.toString()}
             onSelect={handleChatSelect}
           />
         ))}
