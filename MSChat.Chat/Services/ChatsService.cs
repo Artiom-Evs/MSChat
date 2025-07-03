@@ -33,7 +33,8 @@ public class ChatsService : IChatsService
                 Name = c.Name,
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
-                DeletedAt = c.DeletedAt
+                DeletedAt = c.DeletedAt,
+                IsInChat = c.Members.Any(m => m.MemberId == memberId)
             })
             .ToListAsync();
 
@@ -50,7 +51,8 @@ public class ChatsService : IChatsService
                 Name = c.Name,
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
-                DeletedAt = c.DeletedAt
+                DeletedAt = c.DeletedAt,
+                IsInChat = c.Members.Any(m => m.MemberId == memberId)
             })
             .FirstOrDefaultAsync();
 
@@ -135,7 +137,8 @@ public class ChatsService : IChatsService
             Name = chat.Name,
             Type = chat.Type,
             CreatedAt = chat.CreatedAt,
-            DeletedAt = chat.DeletedAt
+            DeletedAt = chat.DeletedAt,
+            IsInChat = true
         };
     }
 
@@ -165,7 +168,8 @@ public class ChatsService : IChatsService
             Name = chat.Name,
             Type = chat.Type,
             CreatedAt = chat.CreatedAt,
-            DeletedAt = chat.DeletedAt
+            DeletedAt = chat.DeletedAt,
+            IsInChat = true
         };
     }
 

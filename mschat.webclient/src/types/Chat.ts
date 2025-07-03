@@ -14,6 +14,7 @@ export interface ChatDto {
   id: number;
   name: string;
   type: ChatType;
+  isInChat: boolean;
   createdAt: string;
   deletedAt?: string;
 }

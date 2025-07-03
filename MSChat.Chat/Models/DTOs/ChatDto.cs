@@ -7,4 +7,5 @@ public class ChatDto
     public ChatType Type { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public bool IsInChat { get; set; }
 }
