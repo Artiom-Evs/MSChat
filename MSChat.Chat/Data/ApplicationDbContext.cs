@@ -18,4 +18,31 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChatMember> Members { get; set; } = default!;
     public DbSet<Message> Messages { get; set; } = default!;
     public DbSet<ChatMemberLink> ChatMemberLinks { get; set; } = default!;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ChatMemberLink>()
+            .HasKey(cml => new { cml.ChatId, cml.MemberId });
+        modelBuilder.Entity<ChatMember>()
+            .HasIndex(cm => cm.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<ChatMemberLink>()
+            .HasOne(cm => cm.Chat)
+            .WithMany(c => c.Members)
+            .HasForeignKey(cm => cm.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChatMemberLink>()
+            .HasOne(cm => cm.Member)
+            .WithMany(m => m.Chats)
+            .HasForeignKey(cm => cm.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ChatMemberLink>()
+            .Property(cm => cm.RoleInChat)
+            .HasDefaultValue(ChatRole.Member);
+    }
 }

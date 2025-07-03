@@ -2,13 +2,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MSChat.Chat.Models;
 
-[PrimaryKey(nameof(ChatMemberLink.ChatId), nameof(ChatMemberLink.MemberId))]
 public class ChatMemberLink
 {
-    public required long ChatId { get; set; }
-    public required long MemberId { get; set; }
-    public required ChatRole RoleInChat { get; set; }
-    public required DateTime JoinedAt { get; set; }
+    public long ChatId { get; set; }
+    public Chat Chat { get; set; } = null!;
+    public long MemberId { get; set; }
+    public ChatMember Member { get; set; } = null!;
+    public ChatRole RoleInChat { get; set; }
+    public DateTime JoinedAt { get; init; } = DateTime.UtcNow;
 }
 
 public enum ChatRole

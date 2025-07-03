@@ -4,6 +4,7 @@ using MSChat.Chat.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MSChat.Chat.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250703011557_AddUserIdFieldToChatMember")]
+    partial class AddUserIdFieldToChatMember
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,17 +92,18 @@ namespace MSChat.Chat.Migrations
                     b.Property<long>("MemberId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ChatMemberId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("JoinedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("RoleInChat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(2);
+                        .HasColumnType("int");
 
                     b.HasKey("ChatId", "MemberId");
 
-                    b.HasIndex("MemberId");
+                    b.HasIndex("ChatMemberId");
 
                     b.ToTable("ChatMemberLinks");
                 });
@@ -140,21 +144,15 @@ namespace MSChat.Chat.Migrations
 
             modelBuilder.Entity("MSChat.Chat.Models.ChatMemberLink", b =>
                 {
-                    b.HasOne("MSChat.Chat.Models.Chat", "Chat")
+                    b.HasOne("MSChat.Chat.Models.Chat", null)
                         .WithMany("Members")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MSChat.Chat.Models.ChatMember", "Member")
+                    b.HasOne("MSChat.Chat.Models.ChatMember", null)
                         .WithMany("Chats")
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Chat");
-
-                    b.Navigation("Member");
+                        .HasForeignKey("ChatMemberId");
                 });
 
             modelBuilder.Entity("MSChat.Chat.Models.Message", b =>
