@@ -6,6 +6,7 @@ using MSChat.Chat.Configurations;
 using MSChat.Chat.Data;
 using MSChat.Chat.Handlers;
 using MSChat.Chat.Requirements;
+using MSChat.Chat.Services;
 using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +69,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
+builder.Services.AddScoped<IChatsService, ChatsService>();
 
 var app = builder.Build();
 

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using MSChat.Chat.Data;
 using MSChat.Chat.Models;
 using MSChat.Chat.Models.DTOs;
+using MSChat.Chat.Services;
 
 namespace MSChat.Chat.Controllers;
 
@@ -20,10 +21,12 @@ namespace MSChat.Chat.Controllers;
 public class ChatsController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IChatsService _chatsService;
 
-    public ChatsController(ApplicationDbContext context)
+    public ChatsController(ApplicationDbContext context, IChatsService chatsService)
     {
         _dbContext = context;
+        _chatsService = chatsService;
     }
 
     /// <summary>
@@ -36,20 +39,8 @@ public class ChatsController : ControllerBase
     public async Task<ActionResult<IEnumerable<ChatDto>>> GetChat()
     {
         var member = await GetOrCreateChatMemberAsync(HttpContext);
-
-        var chats = await _dbContext.Chat
-            .Where(c => c.Members.Any(m => m.MemberId == member.Id))
-            .Select(c => new ChatDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Type = c.Type,
-                CreatedAt = c.CreatedAt,
-                DeletedAt = c.DeletedAt
-            })
-            .ToListAsync();
-
-        return chats;
+        var chats = await _chatsService.GetChatsAsync(member.Id);
+        return Ok(chats);
     }
 
     /// <summary>
@@ -65,19 +56,8 @@ public class ChatsController : ControllerBase
     public async Task<ActionResult<ChatDto?>> GetChat(long id)
     {
         var member = await GetOrCreateChatMemberAsync(HttpContext);
-
-        var chat = await _dbContext.Chat
-            .Where(c => c.Id == id && c.Members.Any(m => m.MemberId == member.Id))
-            .Select(c => new ChatDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Type = c.Type,
-                CreatedAt = c.CreatedAt,
-                DeletedAt = c.DeletedAt
-            })
-            .FirstOrDefaultAsync();
-
+        var chat = await _chatsService.GetChatByIdAsync(member.Id, id);
+        
         if (chat == null)
         {
             return NotFound();
@@ -108,42 +88,19 @@ public class ChatsController : ControllerBase
 
         var member = await GetOrCreateChatMemberAsync(HttpContext);
 
-        var existedChat = await _dbContext.Chat
-            .FirstOrDefaultAsync(c => c.Id == id && c.Members.Any(m => m.MemberId == member.Id));
-
-        if (existedChat == null)
+        try
+        {
+            await _chatsService.UpdateChatAsync(member.Id, id, updateChatDto);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
         {
             return NotFound();
         }
-
-        var chatMemberLink = await _dbContext.ChatMemberLinks
-            .FirstAsync(cml => cml.ChatId == existedChat.Id && cml.MemberId == member.Id);
-
-        if (chatMemberLink.RoleInChat != ChatRole.Owner)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
-
-        existedChat.Name = updateChatDto.Name;
-        existedChat.Type = updateChatDto.Type;
-
-        try
-        {
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!ChatExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
     }
 
     /// <summary>
@@ -163,36 +120,30 @@ public class ChatsController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        // Additional validation for personal chats
+        if (createChatDto.Type == ChatType.Personal && !createChatDto.OtherMemberId.HasValue)
+        {
+            ModelState.AddModelError(nameof(createChatDto.OtherMemberId), "OtherMemberId is required for personal chats");
+            return BadRequest(ModelState);
+        }
+
         var member = await GetOrCreateChatMemberAsync(HttpContext);
 
-        var chat = new Models.Chat
+        try
         {
-            Name = createChatDto.Name,
-            Type = createChatDto.Type,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _dbContext.Chat.Add(chat);
-        _dbContext.ChatMemberLinks.Add(new ChatMemberLink()
+            var chatDto = await _chatsService.CreateChatAsync(member.Id, createChatDto);
+            return CreatedAtAction("GetChat", new { id = chatDto.Id }, chatDto);
+        }
+        catch (ArgumentException ex)
         {
-            Member = member,
-            Chat = chat,
-            RoleInChat = ChatRole.Owner,
-            JoinedAt = DateTime.UtcNow,
-        });
-
-        await _dbContext.SaveChangesAsync();
-
-        var chatDto = new ChatDto
+            ModelState.AddModelError("", ex.Message);
+            return BadRequest(ModelState);
+        }
+        catch (InvalidOperationException ex)
         {
-            Id = chat.Id,
-            Name = chat.Name,
-            Type = chat.Type,
-            CreatedAt = chat.CreatedAt,
-            DeletedAt = chat.DeletedAt
-        };
-
-        return CreatedAtAction("GetChat", new { id = chat.Id }, chatDto);
+            ModelState.AddModelError("", ex.Message);
+            return Conflict(ModelState);
+        }
     }
 
     /// <summary>
@@ -210,33 +161,19 @@ public class ChatsController : ControllerBase
     {
         var member = await GetOrCreateChatMemberAsync(HttpContext);
 
-        var chat = await _dbContext.Chat
-            .FirstOrDefaultAsync(c => c.Id == id && c.Members.Any(cml => cml.MemberId == member.Id));
-
-        if (chat == null)
+        try
+        {
+            await _chatsService.DeleteChatAsync(member.Id, id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
         {
             return NotFound();
         }
-
-
-        var chatMemberLink = await _dbContext.ChatMemberLinks
-            .FirstAsync(cml => cml.ChatId == chat.Id && cml.MemberId == member.Id);
-
-        if (chatMemberLink.RoleInChat != ChatRole.Owner)
+        catch (UnauthorizedAccessException)
         {
             return Forbid();
         }
-
-
-        _dbContext.Chat.Remove(chat);
-        await _dbContext.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    private bool ChatExists(long id)
-    {
-        return _dbContext.Chat.Any(e => e.Id == id);
     }
 
     private async Task<ChatMember> GetOrCreateChatMemberAsync(HttpContext context)

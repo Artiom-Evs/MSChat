@@ -31,9 +31,10 @@ export const useUpdateChat = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: chatApi.updateChat,
-    onSuccess: (data) => {
-      queryClient.setQueryData(["chat", data.id], data);
+    mutationFn: ({ chatId, chat }: { chatId: number; chat: { name: string } }) => 
+      chatApi.updateChat(chatId, chat),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["chat", variables.chatId] });
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });

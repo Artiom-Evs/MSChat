@@ -11,4 +11,6 @@ public class CreateChatDto
     [Required]
     [EnumDataType(typeof(ChatType))]
     public ChatType Type { get; set; }
+    
+    public long? OtherMemberId { get; set; }
 }

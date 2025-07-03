@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import DefaultPage from '../pages/DefaultPage';
 import ChatPage from '../pages/ChatPage';
 import CreateChatPage from '../pages/CreateChatPage';
+import UpdateChatPage from '../pages/UpdateChatPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 import { useAuthStore } from '../stores/authStore';
@@ -50,6 +51,14 @@ const Router: React.FC = () => {
         element={
           <ProtectedRoute>
             <CreateChatPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/chats/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <UpdateChatPage />
           </ProtectedRoute>
         } 
       />

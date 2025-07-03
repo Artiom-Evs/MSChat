@@ -24,7 +24,9 @@ chatApiInstance.interceptors.request.use((config) => {
 
 export const chatApi = {
   getChats: (): Promise<ChatDto[]> =>
-    chatApiInstance.get<ChatDto[]>("v1/chats").then((response) => response.data),
+    chatApiInstance
+      .get<ChatDto[]>("v1/chats")
+      .then((response) => response.data),
 
   getChat: (chatId: number): Promise<ChatDto | null> =>
     chatApiInstance
@@ -36,10 +38,10 @@ export const chatApi = {
       .post<ChatDto>("v1/chats", chat)
       .then((response) => response.data),
 
-  updateChat: (chatId: number, chat: UpdateChatDto): Promise<ChatDto> =>
+  updateChat: (chatId: number, chat: UpdateChatDto): Promise<void> =>
     chatApiInstance
-      .put<ChatDto>(`v1/chats/${chatId}`, chat)
-      .then((response) => response.data),
+      .put(`v1/chats/${chatId}`, chat)
+      .then(() => {}),
 
   deleteChat: (chatId: number): Promise<void> =>
     chatApiInstance.delete(`v1/chats/${chatId}`).then(() => {}),

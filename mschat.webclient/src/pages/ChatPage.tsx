@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, IconButton, CircularProgress } from '@mui/material';
-import { Delete } from '@mui/icons-material';
-import { useParams } from 'react-router-dom';
+import { Delete, Edit } from '@mui/icons-material';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
 import DeleteChatDialog from '../components/DeleteChatDialog';
 
 const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const chatId = id ? parseInt(id, 10) : null;
@@ -69,22 +70,35 @@ const ChatPage: React.FC = () => {
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {selectedChat.name}
           </Typography>
-          <IconButton
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={deleteChatMutation.isPending}
-            sx={{
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'error.main',
-              },
-            }}
-          >
-            {deleteChatMutation.isPending ? (
-              <CircularProgress size={20} />
-            ) : (
-              <Delete fontSize="small" />
-            )}
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton
+              onClick={() => navigate(`/chats/${selectedChat.id}/edit`)}
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteChatMutation.isPending}
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'error.main',
+                },
+              }}
+            >
+              {deleteChatMutation.isPending ? (
+                <CircularProgress size={20} />
+              ) : (
+                <Delete fontSize="small" />
+              )}
+            </IconButton>
+          </Box>
         </Box>
       </Paper>
       
