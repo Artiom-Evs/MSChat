@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
-import type { Chat } from "../types";
+import type { ChatDto, CreateChatDto, UpdateChatDto } from "../types";
 
 export const apiUri = import.meta.env.VITE_CHAT_API_URI;
 
@@ -23,22 +23,22 @@ chatApiInstance.interceptors.request.use((config) => {
 });
 
 export const chatApi = {
-  getChats: (): Promise<Chat[]> =>
-    chatApiInstance.get<Chat[]>("v1/chats").then((response) => response.data),
+  getChats: (): Promise<ChatDto[]> =>
+    chatApiInstance.get<ChatDto[]>("v1/chats").then((response) => response.data),
 
-  getChat: (chatId: number): Promise<Chat | null> =>
+  getChat: (chatId: number): Promise<ChatDto | null> =>
     chatApiInstance
-      .get<Chat | null>(`v1/chats/${chatId}`)
+      .get<ChatDto | null>(`v1/chats/${chatId}`)
       .then((response) => response.data),
 
-  createChat: (chat: Omit<Chat, "id">): Promise<Chat> =>
+  createChat: (chat: CreateChatDto): Promise<ChatDto> =>
     chatApiInstance
-      .post<Chat>("v1/chats", chat)
+      .post<ChatDto>("v1/chats", chat)
       .then((response) => response.data),
 
-  updateChat: (chat: Chat): Promise<Chat> =>
+  updateChat: (chatId: number, chat: UpdateChatDto): Promise<ChatDto> =>
     chatApiInstance
-      .put<Chat>(`v1/chats/${chat.id}`, chat)
+      .put<ChatDto>(`v1/chats/${chatId}`, chat)
       .then((response) => response.data),
 
   deleteChat: (chatId: number): Promise<void> =>

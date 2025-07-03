@@ -1,3 +1,34 @@
+export type ChatType = (typeof ChatType)[keyof typeof ChatType];
+export const ChatType = {
+  Public: 1,
+  Personal: 2,
+} as const;
+
+export type ChatRole = (typeof ChatRole)[keyof typeof ChatRole];
+export const ChatRole = {
+  Owner: 1,
+  Member: 2,
+};
+
+export interface ChatDto {
+  id: number;
+  name: string;
+  type: ChatType;
+  createdAt: string;
+  deletedAt?: string;
+}
+
+export interface CreateChatDto {
+  name: string;
+  type: ChatType;
+}
+
+export interface UpdateChatDto {
+  name: string;
+  type: ChatType;
+}
+
+// Legacy interface for backward compatibility
 export interface Chat {
   id: number;
   name: string;
