@@ -71,6 +71,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
 builder.Services.AddScoped<IChatsService, ChatsService>();
 builder.Services.AddScoped<IMembersService, MembersService>();
+builder.Services.AddScoped<IChatParticipantsService, ChatParticipantsService>();
 
 var app = builder.Build();
 
