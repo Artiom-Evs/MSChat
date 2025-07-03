@@ -66,6 +66,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
 
 var app = builder.Build();
@@ -73,6 +74,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.MapOpenApi();
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "default"));
 }
 
 app.UseHttpsRedirection();
