@@ -25,7 +25,6 @@ export interface CreateChatDto {
 
 export interface UpdateChatDto {
   name: string;
-  type: ChatType;
 }
 
 // Legacy interface for backward compatibility
