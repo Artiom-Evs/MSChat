@@ -4,7 +4,9 @@ import {
   Box,
   List,
   Typography,
+  IconButton,
 } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { useChats } from '../hooks/useChats';
 import ChatListItem from './ChatListItem';
 
@@ -19,20 +21,40 @@ const ChatList: React.FC = () => {
 
   return (
     <Box sx={{ py: 1 }}>
-      <Typography
-        variant="subtitle2"
+      <Box
         sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           px: 2,
           py: 1,
-          fontWeight: 600,
-          color: 'text.secondary',
-          textTransform: 'uppercase',
-          fontSize: '0.75rem',
-          letterSpacing: '0.5px',
         }}
       >
-        Chats
-      </Typography>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            fontWeight: 600,
+            color: 'text.secondary',
+            textTransform: 'uppercase',
+            fontSize: '0.75rem',
+            letterSpacing: '0.5px',
+          }}
+        >
+          Chats
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={() => navigate('/chats/create')}
+          sx={{
+            color: 'text.secondary',
+            '&:hover': {
+              color: 'primary.main',
+            },
+          }}
+        >
+          <Add fontSize="small" />
+        </IconButton>
+      </Box>
       
       <List sx={{ px: 1 }}>
         {chats.map((chat) => (

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DefaultPage from '../pages/DefaultPage';
 import ChatPage from '../pages/ChatPage';
+import CreateChatPage from '../pages/CreateChatPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 import { useAuthStore } from '../stores/authStore';
@@ -41,6 +42,14 @@ const Router: React.FC = () => {
         element={
           <ProtectedRoute>
             <DefaultPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/chats/create" 
+        element={
+          <ProtectedRoute>
+            <CreateChatPage />
           </ProtectedRoute>
         } 
       />
