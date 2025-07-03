@@ -30,16 +30,17 @@ public class ChatsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all chats for the current user
+    /// Get all chats for the current user with optional search functionality
     /// </summary>
+    /// <param name="search">Optional search term to filter chats by name</param>
     /// <returns>List of chats where the user is a member</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ChatDto>), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-    public async Task<ActionResult<IEnumerable<ChatDto>>> GetChat()
+    public async Task<ActionResult<IEnumerable<ChatDto>>> GetChat([FromQuery] string? search = null)
     {
         var member = await GetOrCreateChatMemberAsync(HttpContext);
-        var chats = await _chatsService.GetChatsAsync(member.Id);
+        var chats = await _chatsService.GetChatsAsync(member.Id, search);
         return Ok(chats);
     }
 

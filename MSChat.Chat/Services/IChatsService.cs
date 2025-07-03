@@ -4,7 +4,7 @@ namespace MSChat.Chat.Services;
 
 public interface IChatsService
 {
-    Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId);
+    Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId, string? search = null);
     Task<ChatDto?> GetChatByIdAsync(long memberId, long chatId);
     Task<ChatDto> CreateChatAsync(long memberId, CreateChatDto createChatDto);
     Task UpdateChatAsync(long memberId, long chatId, UpdateChatDto updateChatDto);

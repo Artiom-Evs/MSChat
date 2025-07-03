@@ -16,10 +16,17 @@ public class ChatsService : IChatsService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId)
+    public async Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId, string? search = null)
     {
-        var chats = await _dbContext.Chat
-            .Where(c => c.Type == ChatType.Public  || c.Members.Any(m => m.MemberId == memberId))
+        var query = _dbContext.Chat
+            .Where(c => c.Type == ChatType.Public  || c.Members.Any(m => m.MemberId == memberId));
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(c => c.Name.Contains(search));
+        }
+
+        var chats = await query
             .Select(c => new ChatDto
             {
                 Id = c.Id,
