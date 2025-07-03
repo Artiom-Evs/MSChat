@@ -1,0 +1,7 @@
+﻿namespace MSChat.Chat;
+
+public static class AppConstants
+{
+    public const string Audience = "chatapi";
+    public const string DefaultScope = "chatapi.user";
+}
