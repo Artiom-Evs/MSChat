@@ -1,14 +1,17 @@
-import { HashRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { ChatProvider } from './context/ChatContext';
 import Router from './components/Router';
+import { AuthProvider } from './auth/AuthContext';
 
 function App() {
   return (
-    <HashRouter>
-      <ChatProvider>
-        <Router />
-      </ChatProvider>
-    </HashRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <ChatProvider>
+          <Router />
+        </ChatProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

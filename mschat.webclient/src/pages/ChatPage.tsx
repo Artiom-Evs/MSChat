@@ -41,7 +41,7 @@ const ChatPage: React.FC = () => {
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          {selectedChat.title}
+          {selectedChat.name}
         </Typography>
       </Paper>
       
@@ -57,7 +57,7 @@ const ChatPage: React.FC = () => {
           }}
         >
           <Typography variant="h6" color="text.secondary">
-            Chat: {selectedChat.title}
+            Chat: {selectedChat.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Last message: {selectedChat.lastMessage}

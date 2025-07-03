@@ -1,18 +1,14 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
-
-interface Chat {
-  id: string;
-  title: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount?: number;
-}
+import React, { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { Chat } from '../types';
+import { useAuth } from '../auth/AuthContext';
+import { ChatApiClient } from '../services';
 
 interface ChatContextType {
   chats: Chat[];
-  selectedChatId: string | null;
-  selectChat: (chatId: string) => void;
-  addChat: (chat: Chat) => void;
+  loading: boolean;
+  selectedChatId: number | null;
+  selectChat: (chatId: number) => void;
+  updateChats: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -31,52 +27,47 @@ interface ChatProviderProps {
 }
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+    const chatApiRef = useRef(new ChatApiClient());
   
-  // Mock chat data
-  const [chats] = useState<Chat[]>([
-    {
-      id: '1',
-      title: 'General Discussion',
-      lastMessage: 'Hey everyone! How is everyone doing today?',
-      lastMessageTime: '2 min ago',
-      unreadCount: 3
-    },
-    {
-      id: '2',
-      title: 'Project Updates',
-      lastMessage: 'The new feature is ready for testing',
-      lastMessageTime: '1 hour ago',
-      unreadCount: 1
-    },
-    {
-      id: '3',
-      title: 'Random Chat',
-      lastMessage: 'Anyone up for lunch?',
-      lastMessageTime: '3 hours ago'
-    },
-    {
-      id: '4',
-      title: 'Tech Talk',
-      lastMessage: 'React 19 is amazing! The new features are...',
-      lastMessageTime: '1 day ago'
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      chatApiRef.current.instance.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${user.access_token}`;
+    } else {
+      delete chatApiRef.current.instance.defaults.headers["Authorization"];
     }
-  ]);
+  }, [isAuthenticated, user]);
 
-  const selectChat = (chatId: string) => {
-    setSelectedChatId(chatId);
+  const updateChats = async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    chatApiRef.current.getChats().then(newChats => {
+      setChats(newChats);
+    }).catch(error => {
+      console.error("Error while get chats.", error.message)
+    }).finally(() => {
+      setLoading(false);
+    })
   };
 
-  const addChat = (chat: Chat) => {
-    // Implementation for adding new chats
-    console.log('Adding chat:', chat);
+  const selectChat = (chatId: number) => {
+    setSelectedChatId(chatId);
   };
 
   const value = {
     chats,
+    loading,
     selectedChatId,
+    updateChats,
     selectChat,
-    addChat
   };
 
   return (

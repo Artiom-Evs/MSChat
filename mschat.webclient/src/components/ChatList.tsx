@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -7,12 +7,22 @@ import {
 } from '@mui/material';
 import { useChat } from '../context/ChatContext';
 import ChatListItem from './ChatListItem';
+import { useAuth } from '../auth/AuthContext';
 
 const ChatList: React.FC = () => {
-  const { chats, selectedChatId, selectChat } = useChat();
+  const { isAuthenticated } = useAuth();
+  const { chats, loading, selectedChatId, updateChats, selectChat } = useChat();
   const navigate = useNavigate();
 
-  const handleChatSelect = (chatId: string) => {
+  useEffect(() => {
+    if (!isAuthenticated || loading) return;
+    
+    updateChats().catch(error => {
+      console.error("Error while updating chats:", error.message);
+    });
+  }, [isAuthenticated]);
+  
+  const handleChatSelect = (chatId: number) => {
     selectChat(chatId);
     navigate('/chat');
   };

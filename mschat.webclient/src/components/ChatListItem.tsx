@@ -8,17 +8,17 @@ import {
 } from '@mui/material';
 
 interface Chat {
-  id: string;
-  title: string;
-  lastMessage: string;
-  lastMessageTime: string;
+  id: number;
+  name: string;
+  lastMessage?: string;
+  lastMessageTime?: string;
   unreadCount?: number;
 }
 
 interface ChatListItemProps {
   chat: Chat;
   isSelected: boolean;
-  onSelect: (chatId: string) => void;
+  onSelect: (chatId: number) => void;
 }
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect }) => {
@@ -57,7 +57,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
                 flexGrow: 1,
               }}
             >
-              {chat.title}
+              {chat.name}
             </Typography>
             {chat.unreadCount && chat.unreadCount > 0 && (
               <Chip
@@ -83,7 +83,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
               mt: 0.5,
             }}
           >
-            {chat.lastMessage}
+            {chat.lastMessage ?? "-"}
           </Typography>
           <Typography
             variant="caption"
@@ -93,7 +93,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
               display: 'block',
             }}
           >
-            {chat.lastMessageTime}
+            {chat.lastMessageTime ?? "-"}
           </Typography>
         </Box>
       </ListItemButton>
