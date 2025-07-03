@@ -1,25 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   List,
   Typography,
 } from '@mui/material';
-import { useChat } from '../context/ChatContext';
+import { useChats } from '../hooks/useChats';
 import ChatListItem from './ChatListItem';
-import { useAuth } from '../auth/AuthContext';
 
 const ChatList: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  const { chats, loading, updateChats } = useChat();
+  const { data: chats = [] } = useChats();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    
-    updateChats();
-  }, [isAuthenticated]);
   
   const handleChatSelect = (chatId: number) => {
     navigate(`/chats/${chatId}`);

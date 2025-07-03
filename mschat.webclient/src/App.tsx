@@ -1,16 +1,17 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ChatProvider } from './context/ChatContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import Router from './components/Router';
 import { AuthProvider } from './auth/AuthContext';
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ChatProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <Router />
-        </ChatProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }

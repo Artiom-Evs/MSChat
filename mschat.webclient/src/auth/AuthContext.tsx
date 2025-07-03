@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { User, UserManager } from 'oidc-client-ts';
 import { oidcConfig } from './oidcConfig';
+import { chatApiInstance } from '../lib/chatApi';
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +24,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userManager] = useState(() => new UserManager(oidcConfig));
 
   const isAuthenticated = !!user && !user.expired;
+
+  // Set up axios interceptor for authentication
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      chatApiInstance.defaults.headers['Authorization'] = `Bearer ${user.access_token}`;
+    } else {
+      delete chatApiInstance.defaults.headers['Authorization'];
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     const initAuth = async () => {

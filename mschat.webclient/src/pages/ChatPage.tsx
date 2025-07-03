@@ -1,14 +1,32 @@
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import { useChat } from '../context/ChatContext';
+import { useChat } from '../hooks/useChats';
 
 const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { chats } = useChat();
   
   const chatId = id ? parseInt(id, 10) : null;
-  const selectedChat = chatId ? chats.find(chat => chat.id === chatId) : null;
+  const { data: selectedChat, isLoading } = useChat(chatId || 0);
+
+  if (isLoading) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          height: '100%',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <Typography variant="h6" color="text.secondary">
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!selectedChat) {
     return (
