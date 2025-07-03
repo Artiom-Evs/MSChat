@@ -1,5 +1,6 @@
 export * from "./ChatList";
 export * from "./ChatListItem";
+export * from "./DeleteChatDialog";
 export * from "./Layout";
 export * from "./Router";
 export * from "./ProtectedRoute";
