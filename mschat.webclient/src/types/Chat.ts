@@ -28,6 +28,24 @@ export interface UpdateChatDto {
   name: string;
 }
 
+export interface ChatParticipantDto {
+  chatId: number;
+  memberId: number;
+  memberName: string;
+  memberPhotoUrl?: string;
+  roleInChat: ChatRole;
+  joinedAt: string;
+}
+
+export interface AddParticipantDto {
+  memberId: number;
+  roleInChat?: ChatRole;
+}
+
+export interface UpdateParticipantRoleDto {
+  roleInChat: ChatRole;
+}
+
 // Legacy interface for backward compatibility
 export interface Chat {
   id: number;
