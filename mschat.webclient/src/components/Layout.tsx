@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Drawer, Toolbar, useTheme, useMediaQuery, IconButton, AppBar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 const DRAWER_WIDTH = 320;
@@ -13,9 +15,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const navigate = useNavigate();
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleSearchClick = () => {
+    navigate('/search');
   };
 
   return (
@@ -40,6 +47,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             sx={{ mr: 2 }}
           >
             <MenuIcon />
+          </IconButton>
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton
+            color="inherit"
+            aria-label="search"
+            onClick={handleSearchClick}
+            edge="end"
+          >
+            <SearchIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
