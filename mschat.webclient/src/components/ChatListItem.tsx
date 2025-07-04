@@ -6,15 +6,15 @@ import {
   Typography,
 } from '@mui/material';
 import { useCurrentMember } from '../hooks/useMembers';
-import { ChatType, type ChatParticipantDto } from '../types';
+import { ChatType, type ChatParticipantDto, type MessageDto } from '../types';
+import { formatShortTime, getMessagePreview } from '../utils/dateUtils';
 
 interface Chat {
   id: number;
   name: string;
   type: ChatType;
   participants: ChatParticipantDto[];
-  lastMessage?: string;
-  lastMessageTime?: string;
+  lastMessage?: MessageDto;
 }
 
 interface ChatListItemProps {
@@ -29,7 +29,22 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
   const title = chat.type == ChatType.Personal
       ? chat.participants?.find(m => me && m.memberId != me?.id)?.memberName ?? chat.name
       : chat.name;
+
+  const isPersonalChat = chat.type === ChatType.Personal;
+  const isOwnMessage = chat.lastMessage?.senderId === me?.id;
   
+  const lastMessagePreview = chat.lastMessage 
+    ? getMessagePreview(
+        { text: chat.lastMessage.text, senderName: chat.lastMessage.senderName },
+        isPersonalChat,
+        isOwnMessage,
+        45 // Shorter for better fit
+      )
+    : "No messages yet";
+
+  const lastMessageTime = chat.lastMessage?.createdAt 
+    ? formatShortTime(chat.lastMessage.createdAt)
+    : "";
   
   return (
     <ListItem disablePadding>
@@ -39,6 +54,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
         sx={{
           borderRadius: 2,
           mb: 0.5,
+          py: 1.5,
           '&.Mui-selected': {
             backgroundColor: 'primary.main',
             color: 'primary.contrastText',
@@ -55,7 +71,7 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -64,10 +80,23 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 flexGrow: 1,
+                pr: 1,
               }}
             >
               {title}
             </Typography>
+            {lastMessageTime && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: isSelected ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                  fontSize: '0.75rem',
+                  flexShrink: 0,
+                }}
+              >
+                {lastMessageTime}
+              </Typography>
+            )}
           </Box>
           <Typography
             variant="body2"
@@ -76,20 +105,10 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               color: isSelected ? 'rgba(255,255,255,0.8)' : 'text.secondary',
-              mt: 0.5,
+              fontSize: '0.875rem',
             }}
           >
-            {chat.lastMessage ?? "-"}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: isSelected ? 'rgba(255,255,255,0.6)' : 'text.secondary',
-              mt: 0.5,
-              display: 'block',
-            }}
-          >
-            {chat.lastMessageTime ?? "-"}
+            {lastMessagePreview}
           </Typography>
         </Box>
       </ListItemButton>

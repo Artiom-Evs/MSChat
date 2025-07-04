@@ -27,7 +27,6 @@ public class ChatsService : IChatsService
         }
 
         var chats = await query
-
             .Select(c => new ChatDto
             {
                 Id = c.Id,
@@ -47,7 +46,26 @@ public class ChatsService : IChatsService
                         RoleInChat = cm.RoleInChat,
                         JoinedAt = cm.JoinedAt
                     })
-                    .ToList()
+                    .ToList(),
+                LastMessage = _dbContext.Messages
+                    .Where(m => m.ChatId == c.Id && m.DeletedAt == null)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Join(_dbContext.Members,
+                          m => m.SenderId,
+                          member => member.Id,
+                          (m, member) => new MessageDto
+                          {
+                              Id = m.Id,
+                              ChatId = m.ChatId,
+                              SenderId = m.SenderId,
+                              SenderName = member.Name,
+                              SenderPhotoUrl = member.PhotoUrl,
+                              Text = m.Text,
+                              CreatedAt = m.CreatedAt,
+                              UpdatedAt = m.UpdatedAt,
+                              DeletedAt = m.DeletedAt
+                          })
+                    .FirstOrDefault()
             })
             .ToListAsync();
 

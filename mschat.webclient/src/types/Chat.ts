@@ -16,6 +16,7 @@ export interface ChatDto {
   type: ChatType;
   isInChat: boolean;
   participants: ChatParticipantDto[];
+  lastMessage?: MessageDto;
   createdAt: string;
   deletedAt?: string;
 }

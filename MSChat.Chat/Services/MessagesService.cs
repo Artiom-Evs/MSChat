@@ -129,7 +129,7 @@ public class MessagesService : IMessagesService
             ChatId = chatId,
             SenderId = memberId,
             Text = createMessageDto.Text,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         _dbContext.Messages.Add(message);
