@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, IconButton, CircularProgress, Chip } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { Box, Typography, Paper, IconButton, CircularProgress, Chip, Button } from '@mui/material';
+import { Delete, Edit, ExitToApp, Login } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
+import { useJoinChat, useLeaveChat } from '../hooks/useParticipants';
 import DeleteChatDialog from '../components/DeleteChatDialog';
 import { ChatType } from '../types';
 import { useCurrentMember } from '../hooks/useMembers';
@@ -16,6 +17,8 @@ const ChatPage: React.FC = () => {
   const { data: selectedChat, isLoading } = useChat(chatId || 0);
   const { data: me } = useCurrentMember();
   const deleteChatMutation = useDeleteChat();
+  const joinChatMutation = useJoinChat();
+  const leaveChatMutation = useLeaveChat();
 
   if (isLoading) {
     return (
@@ -63,6 +66,23 @@ const ChatPage: React.FC = () => {
     ? selectedChat.participants?.find(m => me && m.memberId != me?.id)?.memberName ?? selectedChat.name
     : selectedChat.name;
 
+  // Check if current user is in the chat
+  const isUserInChat = selectedChat.participants?.some(p => p.memberId === me?.id) || false;
+  const canJoinChat = selectedChat.type === ChatType.Public && !isUserInChat;
+  const canLeaveChat = isUserInChat && selectedChat.type === ChatType.Public;
+
+  const handleJoinChat = async () => {
+    if (chatId) {
+      await joinChatMutation.mutateAsync(chatId);
+    }
+  };
+
+  const handleLeaveChat = async () => {
+    if (chatId) {
+      await leaveChatMutation.mutateAsync(chatId);
+    }
+  };
+
   const getChatTypeLabel = (type: ChatType) => {
     return type === ChatType.Public ? 'Public' : 'Personal';
   };
@@ -93,7 +113,31 @@ const ChatPage: React.FC = () => {
               color={getChatTypeColor(selectedChat.type)}
             />
           </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {canJoinChat && (
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<Login />}
+                onClick={handleJoinChat}
+                disabled={joinChatMutation.isPending}
+                sx={{ mr: 1 }}
+              >
+                {joinChatMutation.isPending ? 'Joining...' : 'Join Chat'}
+              </Button>
+            )}
+            {canLeaveChat && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<ExitToApp />}
+                onClick={handleLeaveChat}
+                disabled={leaveChatMutation.isPending}
+                sx={{ mr: 1 }}
+              >
+                {leaveChatMutation.isPending ? 'Leaving...' : 'Leave Chat'}
+              </Button>
+            )}
             <IconButton
               onClick={() => navigate(`/chats/${selectedChat.id}/edit`)}
               sx={{
