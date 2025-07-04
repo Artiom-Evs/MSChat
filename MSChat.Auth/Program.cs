@@ -1,8 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddOrchardCms()
-    .AddDatabaseShellsConfiguration();
+    .AddOrchardCms();
 
 var app = builder.Build();
 
