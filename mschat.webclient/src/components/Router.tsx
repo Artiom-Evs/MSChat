@@ -5,6 +5,7 @@ import ChatPage from '../pages/ChatPage';
 import CreateChatPage from '../pages/CreateChatPage';
 import UpdateChatPage from '../pages/UpdateChatPage';
 import SearchPage from '../pages/SearchPage';
+import MemberPage from '../pages/MemberPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 import { useAuthStore } from '../stores/authStore';
@@ -76,6 +77,14 @@ const Router: React.FC = () => {
         element={
           <ProtectedRoute>
             <SearchPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/members/:id" 
+        element={
+          <ProtectedRoute>
+            <MemberPage />
           </ProtectedRoute>
         } 
       />

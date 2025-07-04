@@ -15,6 +15,7 @@ export interface ChatDto {
   name: string;
   type: ChatType;
   isInChat: boolean;
+  participants: ChatParticipantDto[];
   createdAt: string;
   deletedAt?: string;
 }
@@ -22,6 +23,8 @@ export interface ChatDto {
 export interface CreateChatDto {
   name: string;
   type: ChatType;
+  // used for personal chats creation
+  otherMemberId?: number;
 }
 
 export interface UpdateChatDto {

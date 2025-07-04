@@ -70,6 +70,10 @@ const SearchPage: React.FC = () => {
     navigate(`/chats/${chatId}`);
   };
 
+  const handleMemberClick = (memberId: number) => {
+    navigate(`/members/${memberId}`);
+  };
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
@@ -194,9 +198,12 @@ const SearchPage: React.FC = () => {
                 <ListItem
                   key={member.id}
                   sx={{
+                    cursor: 'pointer',
+                    '&:hover': { backgroundColor: 'action.hover' },
                     borderBottom: index < filteredMembers.length - 1 ? '1px solid' : 'none',
                     borderColor: 'divider',
                   }}
+                  onClick={() => handleMemberClick(member.id)}
                 >
                   <ListItemAvatar>
                     <Avatar src={member.photoUrl || undefined}>

@@ -140,11 +140,6 @@ public class ChatsController : ControllerBase
             ModelState.AddModelError("", ex.Message);
             return BadRequest(ModelState);
         }
-        catch (InvalidOperationException ex)
-        {
-            ModelState.AddModelError("", ex.Message);
-            return Conflict(ModelState);
-        }
     }
 
     /// <summary>

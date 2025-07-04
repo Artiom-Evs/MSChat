@@ -4,15 +4,17 @@ import {
   ListItem,
   ListItemButton,
   Typography,
-  Chip,
 } from '@mui/material';
+import { useCurrentMember } from '../hooks/useMembers';
+import { ChatType, type ChatParticipantDto } from '../types';
 
 interface Chat {
   id: number;
   name: string;
+  type: ChatType;
+  participants: ChatParticipantDto[];
   lastMessage?: string;
   lastMessageTime?: string;
-  unreadCount?: number;
 }
 
 interface ChatListItemProps {
@@ -22,6 +24,13 @@ interface ChatListItemProps {
 }
 
 const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect }) => {
+  const { data: me } = useCurrentMember();
+
+  const title = chat.type == ChatType.Personal
+      ? chat.participants?.find(m => me && m.memberId != me?.id)?.memberName ?? chat.name
+      : chat.name;
+  
+  
   return (
     <ListItem disablePadding>
       <ListItemButton
@@ -57,21 +66,8 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
                 flexGrow: 1,
               }}
             >
-              {chat.name}
+              {title}
             </Typography>
-            {chat.unreadCount && chat.unreadCount > 0 && (
-              <Chip
-                label={chat.unreadCount}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.75rem',
-                  minWidth: 20,
-                  backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'primary.main',
-                  color: isSelected ? 'inherit' : 'primary.contrastText',
-                }}
-              />
-            )}
           </Box>
           <Typography
             variant="body2"

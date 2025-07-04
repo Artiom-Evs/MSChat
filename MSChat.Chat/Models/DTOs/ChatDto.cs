@@ -8,4 +8,5 @@ public class ChatDto
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
     public bool IsInChat { get; set; }
+    public ICollection<ChatParticipantDto>? Participants { get; set; }
 }

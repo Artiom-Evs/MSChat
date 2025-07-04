@@ -34,7 +34,19 @@ public class ChatsService : IChatsService
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
                 DeletedAt = c.DeletedAt,
-                IsInChat = c.Members.Any(m => m.MemberId == memberId)
+                IsInChat = c.Members.Any(m => m.MemberId == memberId),
+                Participants = c.Members
+                    .Take(2)
+                    .Select(cm => new ChatParticipantDto
+                    {
+                        ChatId = c.Id,
+                        MemberId = cm.MemberId,
+                        MemberName = cm.Member.Name,
+                        MemberPhotoUrl = cm.Member.PhotoUrl,
+                        RoleInChat = cm.RoleInChat,
+                        JoinedAt = cm.JoinedAt
+                    })
+                    .ToList()
             })
             .ToListAsync();
 
@@ -52,7 +64,16 @@ public class ChatsService : IChatsService
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
                 DeletedAt = c.DeletedAt,
-                IsInChat = c.Members.Any(m => m.MemberId == memberId)
+                IsInChat = c.Members.Any(m => m.MemberId == memberId),
+                Participants = c.Members.Select(cm => new ChatParticipantDto
+                {
+                    ChatId = c.Id,
+                    MemberId = cm.MemberId,
+                    MemberName = cm.Member.Name,
+                    MemberPhotoUrl = cm.Member.PhotoUrl,
+                    RoleInChat = cm.RoleInChat,
+                    JoinedAt = cm.JoinedAt
+                }).ToList()
             })
             .FirstOrDefaultAsync();
 
@@ -98,9 +119,32 @@ public class ChatsService : IChatsService
                        c.Members.Any(m => m.MemberId == createChatDto.OtherMemberId.Value))
             .FirstOrDefaultAsync();
 
+        // If an existing chat is found, return it with participants
         if (existingChat != null)
         {
-            throw new InvalidOperationException("Personal chat already exists between these members");
+            var existingChatDto = await _dbContext.Chat
+                .Where(c => c.Id == existingChat.Id)
+                .Select(c => new ChatDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                    CreatedAt = c.CreatedAt,
+                    DeletedAt = c.DeletedAt,
+                    IsInChat = true,
+                    Participants = c.Members.Select(cm => new ChatParticipantDto
+                    {
+                        ChatId = c.Id,
+                        MemberId = cm.MemberId,
+                        MemberName = cm.Member.Name,
+                        MemberPhotoUrl = cm.Member.PhotoUrl,
+                        RoleInChat = cm.RoleInChat,
+                        JoinedAt = cm.JoinedAt
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return existingChatDto!;
         }
 
         var chat = new Models.Chat
@@ -117,7 +161,7 @@ public class ChatsService : IChatsService
         {
             Chat = chat,
             MemberId = memberId,
-            RoleInChat = ChatRole.Member,
+            RoleInChat = ChatRole.Owner,
             JoinedAt = DateTime.UtcNow
         });
         
@@ -125,21 +169,36 @@ public class ChatsService : IChatsService
         {
             Chat = chat,
             MemberId = createChatDto.OtherMemberId.Value,
-            RoleInChat = ChatRole.Member,
+            RoleInChat = ChatRole.Owner,
             JoinedAt = DateTime.UtcNow
         });
 
         await _dbContext.SaveChangesAsync();
 
-        return new ChatDto
-        {
-            Id = chat.Id,
-            Name = chat.Name,
-            Type = chat.Type,
-            CreatedAt = chat.CreatedAt,
-            DeletedAt = chat.DeletedAt,
-            IsInChat = true
-        };
+        // Return the created personal chat with participants
+        var createdChatDto = await _dbContext.Chat
+            .Where(c => c.Id == chat.Id)
+            .Select(c => new ChatDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Type = c.Type,
+                CreatedAt = c.CreatedAt,
+                DeletedAt = c.DeletedAt,
+                IsInChat = true,
+                Participants = c.Members.Select(cm => new ChatParticipantDto
+                {
+                    ChatId = c.Id,
+                    MemberId = cm.MemberId,
+                    MemberName = cm.Member.Name,
+                    MemberPhotoUrl = cm.Member.PhotoUrl,
+                    RoleInChat = cm.RoleInChat,
+                    JoinedAt = cm.JoinedAt
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return createdChatDto!;
     }
 
     private async Task<ChatDto> CreatePublicChatAsync(long memberId, CreateChatDto createChatDto)
@@ -162,15 +221,30 @@ public class ChatsService : IChatsService
 
         await _dbContext.SaveChangesAsync();
 
-        return new ChatDto
-        {
-            Id = chat.Id,
-            Name = chat.Name,
-            Type = chat.Type,
-            CreatedAt = chat.CreatedAt,
-            DeletedAt = chat.DeletedAt,
-            IsInChat = true
-        };
+        // Return the created public chat with participants
+        var createdChatDto = await _dbContext.Chat
+            .Where(c => c.Id == chat.Id)
+            .Select(c => new ChatDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Type = c.Type,
+                CreatedAt = c.CreatedAt,
+                DeletedAt = c.DeletedAt,
+                IsInChat = true,
+                Participants = c.Members.Select(cm => new ChatParticipantDto
+                {
+                    ChatId = c.Id,
+                    MemberId = cm.MemberId,
+                    MemberName = cm.Member.Name,
+                    MemberPhotoUrl = cm.Member.PhotoUrl,
+                    RoleInChat = cm.RoleInChat,
+                    JoinedAt = cm.JoinedAt
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return createdChatDto!;
     }
 
     public async Task UpdateChatAsync(long memberId, long chatId, UpdateChatDto updateChatDto)

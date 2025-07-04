@@ -4,6 +4,8 @@ import { Delete, Edit } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
 import DeleteChatDialog from '../components/DeleteChatDialog';
+import { ChatType } from '../types';
+import { useCurrentMember } from '../hooks/useMembers';
 
 const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +14,7 @@ const ChatPage: React.FC = () => {
   
   const chatId = id ? parseInt(id, 10) : null;
   const { data: selectedChat, isLoading } = useChat(chatId || 0);
+  const { data: me } = useCurrentMember();
   const deleteChatMutation = useDeleteChat();
 
   if (isLoading) {
@@ -55,6 +58,11 @@ const ChatPage: React.FC = () => {
     );
   }
 
+  // get second member name as a chat title when chat is personal
+  const title = selectedChat.type == ChatType.Personal
+    ? selectedChat.participants?.find(m => me && m.memberId != me?.id)?.memberName ?? selectedChat.name
+    : selectedChat.name;
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Paper 
@@ -68,7 +76,7 @@ const ChatPage: React.FC = () => {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {selectedChat.name}
+            {title}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton
@@ -114,7 +122,7 @@ const ChatPage: React.FC = () => {
           }}
         >
           <Typography variant="h6" color="text.secondary">
-            Chat: {selectedChat.name}
+            {title}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Last message: {""}

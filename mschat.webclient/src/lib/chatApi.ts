@@ -1,5 +1,13 @@
 import axios, { type AxiosInstance } from "axios";
-import type { ChatDto, CreateChatDto, UpdateChatDto, ChatParticipantDto, AddParticipantDto, UpdateParticipantRoleDto, MemberDto } from "../types";
+import type {
+  ChatDto,
+  CreateChatDto,
+  UpdateChatDto,
+  ChatParticipantDto,
+  AddParticipantDto,
+  UpdateParticipantRoleDto,
+  MemberDto,
+} from "../types";
 
 export const apiUri = import.meta.env.VITE_CHAT_API_URI;
 
@@ -39,9 +47,7 @@ export const chatApi = {
       .then((response) => response.data),
 
   updateChat: (chatId: number, chat: UpdateChatDto): Promise<void> =>
-    chatApiInstance
-      .put(`v1/chats/${chatId}`, chat)
-      .then(() => {}),
+    chatApiInstance.put(`v1/chats/${chatId}`, chat).then(() => {}),
 
   deleteChat: (chatId: number): Promise<void> =>
     chatApiInstance.delete(`v1/chats/${chatId}`).then(() => {}),
@@ -52,25 +58,36 @@ export const chatApi = {
       .get<ChatParticipantDto[]>(`v1/chats/${chatId}/participants`)
       .then((response) => response.data),
 
-  addParticipant: (chatId: number, participant: AddParticipantDto): Promise<ChatParticipantDto> =>
+  addParticipant: (
+    chatId: number,
+    participant: AddParticipantDto
+  ): Promise<ChatParticipantDto> =>
     chatApiInstance
       .post<ChatParticipantDto>(`v1/chats/${chatId}/participants`, participant)
       .then((response) => response.data),
 
-  updateParticipantRole: (chatId: number, participantMemberId: number, roleUpdate: UpdateParticipantRoleDto): Promise<void> =>
+  updateParticipantRole: (
+    chatId: number,
+    participantMemberId: number,
+    roleUpdate: UpdateParticipantRoleDto
+  ): Promise<void> =>
     chatApiInstance
-      .put(`v1/chats/${chatId}/participants/${participantMemberId}/role`, roleUpdate)
+      .put(
+        `v1/chats/${chatId}/participants/${participantMemberId}/role`,
+        roleUpdate
+      )
       .then(() => {}),
 
-  removeParticipant: (chatId: number, participantMemberId: number): Promise<void> =>
+  removeParticipant: (
+    chatId: number,
+    participantMemberId: number
+  ): Promise<void> =>
     chatApiInstance
       .delete(`v1/chats/${chatId}/participants/${participantMemberId}`)
       .then(() => {}),
 
   joinChat: (chatId: number): Promise<void> =>
-    chatApiInstance
-      .post(`v1/chats/${chatId}/participants/join`)
-      .then(() => {}),
+    chatApiInstance.post(`v1/chats/${chatId}/participants/join`).then(() => {}),
 
   leaveChat: (chatId: number): Promise<void> =>
     chatApiInstance
@@ -80,7 +97,9 @@ export const chatApi = {
   // Members management
   getMembers: (search?: string): Promise<MemberDto[]> =>
     chatApiInstance
-      .get<MemberDto[]>("v1/members", { params: search ? { search } : undefined })
+      .get<MemberDto[]>("v1/members", {
+        params: search ? { search } : undefined,
+      })
       .then((response) => response.data),
 
   getMember: (memberId: number): Promise<MemberDto | null> =>
