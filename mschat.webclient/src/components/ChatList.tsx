@@ -57,7 +57,7 @@ const ChatList: React.FC = () => {
       </Box>
       
       <List sx={{ px: 1 }}>
-        {chats.map((chat) => (
+        {chats.filter(c => c.isInChat).map((chat) => (
           <ChatListItem
             key={chat.id}
             chat={chat}
