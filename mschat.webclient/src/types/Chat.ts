@@ -46,6 +46,14 @@ export interface UpdateParticipantRoleDto {
   roleInChat: ChatRole;
 }
 
+export interface MemberDto {
+  id: number;
+  name: string;
+  photoUrl?: string;
+  createdAt: string;
+  deletedAt?: string;
+}
+
 // Legacy interface for backward compatibility
 export interface Chat {
   id: number;

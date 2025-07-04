@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
-import type { ChatDto, CreateChatDto, UpdateChatDto, ChatParticipantDto, AddParticipantDto, UpdateParticipantRoleDto } from "../types";
+import type { ChatDto, CreateChatDto, UpdateChatDto, ChatParticipantDto, AddParticipantDto, UpdateParticipantRoleDto, MemberDto } from "../types";
 
 export const apiUri = import.meta.env.VITE_CHAT_API_URI;
 
@@ -76,4 +76,20 @@ export const chatApi = {
     chatApiInstance
       .post(`v1/chats/${chatId}/participants/leave`)
       .then(() => {}),
+
+  // Members management
+  getMembers: (search?: string): Promise<MemberDto[]> =>
+    chatApiInstance
+      .get<MemberDto[]>("v1/members", { params: search ? { search } : undefined })
+      .then((response) => response.data),
+
+  getMember: (memberId: number): Promise<MemberDto | null> =>
+    chatApiInstance
+      .get<MemberDto | null>(`v1/members/${memberId}`)
+      .then((response) => response.data),
+
+  getCurrentMember: (): Promise<MemberDto | null> =>
+    chatApiInstance
+      .get<MemberDto | null>("v1/members/me")
+      .then((response) => response.data),
 };
