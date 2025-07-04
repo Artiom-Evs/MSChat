@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DefaultPage from '../pages/DefaultPage';
 import ChatPage from '../pages/ChatPage';
+import ChatParticipantsPage from '../pages/ChatParticipantsPage';
 import CreateChatPage from '../pages/CreateChatPage';
 import UpdateChatPage from '../pages/UpdateChatPage';
 import SearchPage from '../pages/SearchPage';
@@ -61,6 +62,14 @@ const Router: React.FC = () => {
         element={
           <ProtectedRoute>
             <UpdateChatPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/chats/:id/participants" 
+        element={
+          <ProtectedRoute>
+            <ChatParticipantsPage />
           </ProtectedRoute>
         } 
       />

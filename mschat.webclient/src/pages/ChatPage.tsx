@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, IconButton, CircularProgress, Chip, Button } from '@mui/material';
-import { Delete, Edit, ExitToApp, Login } from '@mui/icons-material';
+import { Delete, Edit, ExitToApp, Login, People } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
 import { useJoinChat, useLeaveChat } from '../hooks/useParticipants';
@@ -138,6 +138,17 @@ const ChatPage: React.FC = () => {
                 {leaveChatMutation.isPending ? 'Leaving...' : 'Leave Chat'}
               </Button>
             )}
+            <IconButton
+              onClick={() => navigate(`/chats/${selectedChat.id}/participants`)}
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <People fontSize="small" />
+            </IconButton>
             <IconButton
               onClick={() => navigate(`/chats/${selectedChat.id}/edit`)}
               sx={{
