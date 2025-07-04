@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, IconButton, CircularProgress } from '@mui/material';
+import { Box, Typography, Paper, IconButton, CircularProgress, Chip } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
@@ -63,6 +63,14 @@ const ChatPage: React.FC = () => {
     ? selectedChat.participants?.find(m => me && m.memberId != me?.id)?.memberName ?? selectedChat.name
     : selectedChat.name;
 
+  const getChatTypeLabel = (type: ChatType) => {
+    return type === ChatType.Public ? 'Public' : 'Personal';
+  };
+
+  const getChatTypeColor = (type: ChatType) => {
+    return type === ChatType.Public ? 'primary' : 'secondary';
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Paper 
@@ -75,9 +83,16 @@ const ChatPage: React.FC = () => {
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {title}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {title}
+            </Typography>
+            <Chip
+              label={getChatTypeLabel(selectedChat.type)}
+              size="small"
+              color={getChatTypeColor(selectedChat.type)}
+            />
+          </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton
               onClick={() => navigate(`/chats/${selectedChat.id}/edit`)}

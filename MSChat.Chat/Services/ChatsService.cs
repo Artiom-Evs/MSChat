@@ -19,7 +19,7 @@ public class ChatsService : IChatsService
     public async Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId, string? search = null)
     {
         var query = _dbContext.Chat
-            .Where(c => c.Type == ChatType.Public  || c.Members.Any(m => m.MemberId == memberId));
+            .Where(c => c.Members.Any(m => m.MemberId == memberId));
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -27,6 +27,7 @@ public class ChatsService : IChatsService
         }
 
         var chats = await query
+
             .Select(c => new ChatDto
             {
                 Id = c.Id,
@@ -56,7 +57,7 @@ public class ChatsService : IChatsService
     public async Task<ChatDto?> GetChatByIdAsync(long memberId, long chatId)
     {
         var chat = await _dbContext.Chat
-            .Where(c => c.Id == chatId && (c.Type == ChatType.Public || c.Members.Any(m => m.MemberId == memberId)))
+            .Where(c => c.Id == chatId && c.Members.Any(m => m.MemberId == memberId))
             .Select(c => new ChatDto
             {
                 Id = c.Id,
