@@ -81,8 +81,6 @@ const ChatParticipantsPage: React.FC = () => {
     switch (role) {
       case ChatRole.Owner:
         return 'primary';
-      case ChatRole.Admin:
-        return 'secondary';
       case ChatRole.Member:
         return 'default';
       default:
@@ -94,8 +92,6 @@ const ChatParticipantsPage: React.FC = () => {
     switch (role) {
       case ChatRole.Owner:
         return 'Owner';
-      case ChatRole.Admin:
-        return 'Admin';
       case ChatRole.Member:
         return 'Member';
       default:
@@ -152,7 +148,6 @@ const ChatParticipantsPage: React.FC = () => {
             <React.Fragment key={participant.memberId}>
               <ListItem 
                 alignItems="flex-start"
-                button
                 onClick={() => handleMemberClick(participant.memberId)}
                 sx={{
                   cursor: 'pointer',

@@ -8,7 +8,7 @@ export type ChatRole = (typeof ChatRole)[keyof typeof ChatRole];
 export const ChatRole = {
   Owner: 1,
   Member: 2,
-};
+} as const;
 
 export interface ChatDto {
   id: number;

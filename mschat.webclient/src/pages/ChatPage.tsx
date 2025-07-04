@@ -5,6 +5,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
 import { useJoinChat, useLeaveChat } from '../hooks/useParticipants';
 import DeleteChatDialog from '../components/DeleteChatDialog';
+import MessageList from '../components/MessageList';
+import MessageForm from '../components/MessageForm';
 import { ChatType } from '../types';
 import { useCurrentMember } from '../hooks/useMembers';
 
@@ -180,31 +182,16 @@ const ChatPage: React.FC = () => {
         </Box>
       </Paper>
       
-      <Box sx={{ flexGrow: 1, p: 3 }}>
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '100%',
-            flexDirection: 'column',
-            gap: 2
-          }}
-        >
-          <Typography variant="h6" color="text.secondary">
-            {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Last message: {""}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {""}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Chat interface will be implemented here
-          </Typography>
-        </Box>
+      {/* Messages Area */}
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <MessageList chatId={chatId!} />
       </Box>
+      
+      {/* Message Input */}
+      <MessageForm 
+        chatId={chatId!} 
+        disabled={!isUserInChat}
+      />
       
       {/* Delete Confirmation Dialog */}
       {selectedChat && (
