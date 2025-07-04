@@ -16,18 +16,8 @@ services:
       dockerfile: ./MSChat.Auth/Dockerfile
     container_name: auth
     ports:
-      - "8080:8080"
-      - "8081:8081"
-    depends_on:
-      - mssql
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      OrchardCore__DatabaseProvider: SqlConnection
-      OrchardCore__ConnectionString: Server=mssql;Encrypt=true;TrustServerCertificate=true;MultipleActiveResultSets=true;User Id=sa;Password=TopSec1!
-      OrchardCore__OrchardCore_Shells_Database__DatabaseProvider: SqlConnection
-      OrchardCore__OrchardCore_Shells_Database__ConnectionString: Server=mssql;Encrypt=true;TrustServerCertificate=true;MultipleActiveResultSets=true;User Id=sa;Password=TopSec1!
-      OrchardCore__OrchardCore_Shells_Database__TablePrefix: sc
-      OrchardCore__OrchardCore_Shells_Database__MigrateFromFiles: true
+      - "5000:8080"
+      - "5001:8081"
 
 volumes:
   mssql_data:
