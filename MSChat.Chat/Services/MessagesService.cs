@@ -1,0 +1,243 @@
+using Microsoft.EntityFrameworkCore;
+using MSChat.Chat.Data;
+using MSChat.Chat.Models;
+using MSChat.Chat.Models.DTOs;
+
+namespace MSChat.Chat.Services;
+
+public class MessagesService : IMessagesService
+{
+    private readonly ApplicationDbContext _dbContext;
+    private readonly ILogger<MessagesService> _logger;
+
+    public MessagesService(ApplicationDbContext dbContext, ILogger<MessagesService> logger)
+    {
+        _dbContext = dbContext;
+        _logger = logger;
+    }
+
+    public async Task<IEnumerable<MessageDto>> GetMessagesAsync(long memberId, long chatId, int page = 1, int pageSize = 50)
+    {
+        // Verify user is a member of the chat
+        var isMember = await _dbContext.ChatMemberLinks
+            .AnyAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+
+        if (!isMember)
+        {
+            // Check if it's a public chat
+            var isPublicChat = await _dbContext.Chat
+                .AnyAsync(c => c.Id == chatId && c.Type == ChatType.Public);
+
+            if (!isPublicChat)
+            {
+                throw new UnauthorizedAccessException("User is not a member of this chat");
+            }
+        }
+
+        var messages = await _dbContext.Messages
+            .Where(m => m.ChatId == chatId)
+            .OrderByDescending(m => m.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Join(_dbContext.Members,
+                  m => m.SenderId,
+                  member => member.Id,
+                  (m, member) => new MessageDto
+                  {
+                      Id = m.Id,
+                      ChatId = m.ChatId,
+                      SenderId = m.SenderId,
+                      SenderName = member.Name,
+                      SenderPhotoUrl = member.PhotoUrl,
+                      Text = m.Text,
+                      CreatedAt = m.CreatedAt,
+                      UpdatedAt = m.UpdatedAt,
+                      DeletedAt = m.DeletedAt
+                  })
+            .ToListAsync();
+
+        return messages.OrderBy(m => m.CreatedAt);
+    }
+
+    public async Task<MessageDto?> GetMessageByIdAsync(long memberId, long messageId)
+    {
+        var message = await _dbContext.Messages
+            .Where(m => m.Id == messageId)
+            .Join(_dbContext.Members,
+                  m => m.SenderId,
+                  member => member.Id,
+                  (m, member) => new { Message = m, Member = member })
+            .FirstOrDefaultAsync();
+
+        if (message == null)
+        {
+            return null;
+        }
+
+        // Verify user is a member of the chat
+        var isMember = await _dbContext.ChatMemberLinks
+            .AnyAsync(cml => cml.ChatId == message.Message.ChatId && cml.MemberId == memberId);
+
+        if (!isMember)
+        {
+            // Check if it's a public chat
+            var isPublicChat = await _dbContext.Chat
+                .AnyAsync(c => c.Id == message.Message.ChatId && c.Type == ChatType.Public);
+
+            if (!isPublicChat)
+            {
+                throw new UnauthorizedAccessException("User is not a member of this chat");
+            }
+        }
+
+        return new MessageDto
+        {
+            Id = message.Message.Id,
+            ChatId = message.Message.ChatId,
+            SenderId = message.Message.SenderId,
+            SenderName = message.Member.Name,
+            SenderPhotoUrl = message.Member.PhotoUrl,
+            Text = message.Message.Text,
+            CreatedAt = message.Message.CreatedAt,
+            UpdatedAt = message.Message.UpdatedAt,
+            DeletedAt = message.Message.DeletedAt
+        };
+    }
+
+    public async Task<MessageDto> CreateMessageAsync(long memberId, long chatId, CreateMessageDto createMessageDto)
+    {
+        // Verify user is a member of the chat
+        var isMember = await _dbContext.ChatMemberLinks
+            .AnyAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+
+        if (!isMember)
+        {
+            throw new UnauthorizedAccessException("User is not a member of this chat");
+        }
+
+        // Verify chat exists and is not deleted
+        var chat = await _dbContext.Chat
+            .FirstOrDefaultAsync(c => c.Id == chatId && c.DeletedAt == null);
+
+        if (chat == null)
+        {
+            throw new KeyNotFoundException("Chat not found or has been deleted");
+        }
+
+        var message = new Message
+        {
+            ChatId = chatId,
+            SenderId = memberId,
+            Text = createMessageDto.Text,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.Messages.Add(message);
+        await _dbContext.SaveChangesAsync();
+
+        // Return the created message with sender information
+        var member = await _dbContext.Members.FindAsync(memberId);
+        return new MessageDto
+        {
+            Id = message.Id,
+            ChatId = message.ChatId,
+            SenderId = message.SenderId,
+            SenderName = member?.Name ?? "Unknown",
+            SenderPhotoUrl = member?.PhotoUrl,
+            Text = message.Text,
+            CreatedAt = message.CreatedAt,
+            UpdatedAt = message.UpdatedAt,
+            DeletedAt = message.DeletedAt
+        };
+    }
+
+    public async Task UpdateMessageAsync(long memberId, long messageId, UpdateMessageDto updateMessageDto)
+    {
+        var message = await _dbContext.Messages
+            .FirstOrDefaultAsync(m => m.Id == messageId);
+
+        if (message == null)
+        {
+            throw new KeyNotFoundException("Message not found");
+        }
+
+        // Only the sender can update their own message
+        if (message.SenderId != memberId)
+        {
+            throw new UnauthorizedAccessException("You can only update your own messages");
+        }
+
+        // Cannot update deleted messages
+        if (message.DeletedAt.HasValue)
+        {
+            throw new InvalidOperationException("Cannot update a deleted message");
+        }
+
+        message.Text = updateMessageDto.Text;
+        message.UpdatedAt = DateTime.UtcNow;
+
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await MessageExistsAsync(messageId))
+            {
+                throw new KeyNotFoundException("Message not found");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+
+    public async Task DeleteMessageAsync(long memberId, long messageId)
+    {
+        var message = await _dbContext.Messages
+            .FirstOrDefaultAsync(m => m.Id == messageId);
+
+        if (message == null)
+        {
+            throw new KeyNotFoundException("Message not found");
+        }
+
+        // Only the sender can delete their own message, or chat owners can delete any message
+        if (message.SenderId != memberId)
+        {
+            // Check if user is a chat owner
+            var isOwner = await _dbContext.ChatMemberLinks
+                .AnyAsync(cml => cml.ChatId == message.ChatId && cml.MemberId == memberId && cml.RoleInChat == ChatRole.Owner);
+
+            if (!isOwner)
+            {
+                throw new UnauthorizedAccessException("You can only delete your own messages or you must be a chat owner");
+            }
+        }
+
+        // Soft delete the message
+        message.DeletedAt = DateTime.UtcNow;
+
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await MessageExistsAsync(messageId))
+            {
+                throw new KeyNotFoundException("Message not found");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+
+    private async Task<bool> MessageExistsAsync(long messageId)
+    {
+        return await _dbContext.Messages.AnyAsync(e => e.Id == messageId);
+    }
+}
