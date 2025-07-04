@@ -57,6 +57,28 @@ export interface MemberDto {
   deletedAt?: string;
 }
 
+export interface MessageDto {
+  id: number;
+  chatId: number;
+  senderId: number;
+  senderName: string;
+  senderPhotoUrl?: string;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+  isDeleted: boolean;
+  isEdited: boolean;
+}
+
+export interface CreateMessageDto {
+  text: string;
+}
+
+export interface UpdateMessageDto {
+  text: string;
+}
+
 // Legacy interface for backward compatibility
 export interface Chat {
   id: number;

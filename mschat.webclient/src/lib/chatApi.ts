@@ -7,6 +7,9 @@ import type {
   AddParticipantDto,
   UpdateParticipantRoleDto,
   MemberDto,
+  MessageDto,
+  CreateMessageDto,
+  UpdateMessageDto,
 } from "../types";
 
 export const apiUri = import.meta.env.VITE_CHAT_API_URI;
@@ -111,4 +114,43 @@ export const chatApi = {
     chatApiInstance
       .get<MemberDto | null>("v1/members/me")
       .then((response) => response.data),
+
+  // Messages management
+  getMessages: (
+    chatId: number,
+    page: number = 1,
+    pageSize: number = 50
+  ): Promise<MessageDto[]> =>
+    chatApiInstance
+      .get<MessageDto[]>(`v1/chats/${chatId}/messages`, {
+        params: { page, pageSize },
+      })
+      .then((response) => response.data),
+
+  getMessage: (chatId: number, messageId: number): Promise<MessageDto | null> =>
+    chatApiInstance
+      .get<MessageDto | null>(`v1/chats/${chatId}/messages/${messageId}`)
+      .then((response) => response.data),
+
+  createMessage: (
+    chatId: number,
+    message: CreateMessageDto
+  ): Promise<MessageDto> =>
+    chatApiInstance
+      .post<MessageDto>(`v1/chats/${chatId}/messages`, message)
+      .then((response) => response.data),
+
+  updateMessage: (
+    chatId: number,
+    messageId: number,
+    message: UpdateMessageDto
+  ): Promise<void> =>
+    chatApiInstance
+      .put(`v1/chats/${chatId}/messages/${messageId}`, message)
+      .then(() => {}),
+
+  deleteMessage: (chatId: number, messageId: number): Promise<void> =>
+    chatApiInstance
+      .delete(`v1/chats/${chatId}/messages/${messageId}`)
+      .then(() => {}),
 };
