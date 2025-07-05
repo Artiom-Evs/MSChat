@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Button, Typography, Paper } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
-import { useAuthToken } from '../hooks/useAuthToken';
 
 const LoginPrompt: React.FC = () => {
   const auth = useAuth();

@@ -11,149 +11,179 @@ import type {
   CreateMessageDto,
   UpdateMessageDto,
 } from "../types";
+import { config } from "../config";
 
-export const apiUri = import.meta.env.VITE_CHAT_API_URI;
+class ChatApiService {
+  private _instance?: AxiosInstance;
 
-if (!apiUri) {
-  throw new Error(
-    "VITE_CHAT_API_URI is not defined in the environment variables."
-  );
-}
+  // lazy-load AxiosInstance object
+  get instance() {
+    if (!this._instance) {
+      this._instance = this.createInstance();
+    }
 
-export const chatApiInstance: AxiosInstance = axios.create({
-  baseURL: `${apiUri}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Auth interceptor function that will be called from components
-export const setAuthToken = (token: string | null) => {
-  if (token) {
-    chatApiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete chatApiInstance.defaults.headers.common['Authorization'];
+    return this._instance;
   }
-};
 
-export const chatApi = {
-  getChats: (): Promise<ChatDto[]> =>
-    chatApiInstance
+  createInstance() {
+    return axios.create({
+      baseURL: `${config.chatApiUri}/api`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+
+  setAuthToken(token: string | null) {
+    if (token) {
+      this.instance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${token}`;
+    } else {
+      delete this.instance.defaults.headers.common["Authorization"];
+    }
+  }
+
+  getChats(): Promise<ChatDto[]> {
+    return this.instance
       .get<ChatDto[]>("v1/chats")
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  getChat: (chatId: number): Promise<ChatDto | null> =>
-    chatApiInstance
+  getChat(chatId: number): Promise<ChatDto | null> {
+    return this.instance
       .get<ChatDto | null>(`v1/chats/${chatId}`)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  createChat: (chat: CreateChatDto): Promise<ChatDto> =>
-    chatApiInstance
+  createChat(chat: CreateChatDto): Promise<ChatDto> {
+    return this.instance
       .post<ChatDto>("v1/chats", chat)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  updateChat: (chatId: number, chat: UpdateChatDto): Promise<void> =>
-    chatApiInstance.put(`v1/chats/${chatId}`, chat).then(() => {}),
+  updateChat(chatId: number, chat: UpdateChatDto): Promise<void> {
+    return this.instance.put(`v1/chats/${chatId}`, chat).then(() => {});
+  }
 
-  deleteChat: (chatId: number): Promise<void> =>
-    chatApiInstance.delete(`v1/chats/${chatId}`).then(() => {}),
+  deleteChat(chatId: number): Promise<void> {
+    return this.instance.delete(`v1/chats/${chatId}`).then(() => {});
+  }
 
   // Participant management
-  getChatParticipants: (chatId: number): Promise<ChatParticipantDto[]> =>
-    chatApiInstance
+  getChatParticipants(chatId: number): Promise<ChatParticipantDto[]> {
+    return this.instance
       .get<ChatParticipantDto[]>(`v1/chats/${chatId}/participants`)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  addParticipant: (
+  addParticipant(
     chatId: number,
     participant: AddParticipantDto
-  ): Promise<ChatParticipantDto> =>
-    chatApiInstance
+  ): Promise<ChatParticipantDto> {
+    return this.instance
       .post<ChatParticipantDto>(`v1/chats/${chatId}/participants`, participant)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  updateParticipantRole: (
+  updateParticipantRole(
     chatId: number,
     participantMemberId: number,
     roleUpdate: UpdateParticipantRoleDto
-  ): Promise<void> =>
-    chatApiInstance
+  ): Promise<void> {
+    return this.instance
       .put(
         `v1/chats/${chatId}/participants/${participantMemberId}/role`,
         roleUpdate
       )
-      .then(() => {}),
+      .then(() => {});
+  }
 
-  removeParticipant: (
+  removeParticipant(
     chatId: number,
     participantMemberId: number
-  ): Promise<void> =>
-    chatApiInstance
+  ): Promise<void> {
+    return this.instance
       .delete(`v1/chats/${chatId}/participants/${participantMemberId}`)
-      .then(() => {}),
+      .then(() => {});
+  }
 
-  joinChat: (chatId: number): Promise<void> =>
-    chatApiInstance.post(`v1/chats/${chatId}/participants/join`).then(() => {}),
+  joinChat(chatId: number): Promise<void> {
+    return this.instance
+      .post(`v1/chats/${chatId}/participants/join`)
+      .then(() => {});
+  }
 
-  leaveChat: (chatId: number): Promise<void> =>
-    chatApiInstance
+  leaveChat(chatId: number): Promise<void> {
+    return this.instance
       .post(`v1/chats/${chatId}/participants/leave`)
-      .then(() => {}),
+      .then(() => {});
+  }
 
   // Members management
-  getMembers: (search?: string): Promise<MemberDto[]> =>
-    chatApiInstance
+  getMembers(search?: string): Promise<MemberDto[]> {
+    return this.instance
       .get<MemberDto[]>("v1/members", {
         params: search ? { search } : undefined,
       })
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  getMember: (memberId: number): Promise<MemberDto | null> =>
-    chatApiInstance
+  getMember(memberId: number): Promise<MemberDto | null> {
+    return this.instance
       .get<MemberDto | null>(`v1/members/${memberId}`)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  getCurrentMember: (): Promise<MemberDto | null> =>
-    chatApiInstance
+  getCurrentMember(): Promise<MemberDto | null> {
+    return this.instance
       .get<MemberDto | null>("v1/members/me")
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
   // Messages management
-  getMessages: (
+  getMessages(
     chatId: number,
     page: number = 1,
     pageSize: number = 50
-  ): Promise<MessageDto[]> =>
-    chatApiInstance
+  ): Promise<MessageDto[]> {
+    return this.instance
       .get<MessageDto[]>(`v1/chats/${chatId}/messages`, {
         params: { page, pageSize },
       })
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  getMessage: (chatId: number, messageId: number): Promise<MessageDto | null> =>
-    chatApiInstance
+  getMessage(chatId: number, messageId: number): Promise<MessageDto | null> {
+    return this.instance
       .get<MessageDto | null>(`v1/chats/${chatId}/messages/${messageId}`)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  createMessage: (
+  createMessage(
     chatId: number,
     message: CreateMessageDto
-  ): Promise<MessageDto> =>
-    chatApiInstance
+  ): Promise<MessageDto> {
+    return this.instance
       .post<MessageDto>(`v1/chats/${chatId}/messages`, message)
-      .then((response) => response.data),
+      .then((response) => response.data);
+  }
 
-  updateMessage: (
+  updateMessage(
     chatId: number,
     messageId: number,
     message: UpdateMessageDto
-  ): Promise<void> =>
-    chatApiInstance
+  ): Promise<void> {
+    return this.instance
       .put(`v1/chats/${chatId}/messages/${messageId}`, message)
-      .then(() => {}),
+      .then(() => {});
+  }
 
-  deleteMessage: (chatId: number, messageId: number): Promise<void> =>
-    chatApiInstance
+  deleteMessage(chatId: number, messageId: number): Promise<void> {
+    return this.instance
       .delete(`v1/chats/${chatId}/messages/${messageId}`)
-      .then(() => {}),
-};
+      .then(() => {});
+  }
+}
+
+export const chatApi = new ChatApiService();

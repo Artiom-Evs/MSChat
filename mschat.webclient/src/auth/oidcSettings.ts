@@ -1,15 +1,11 @@
 import { WebStorageStateStore } from "oidc-client-ts";
 import type { AuthProviderProps } from "react-oidc-context";
+import { config } from "../config";
 
-const env = import.meta.env;
-
-if (!env.VITE_OIDC_SERVER_URI || !env.VITE_OIDC_CLIENT_ID) {
-  throw new Error("OIDC configuration is missing in environment variables.");
-}
-
-export const oidcSettings: AuthProviderProps = {
-  authority: env.VITE_OIDC_SERVER_URI,
-  client_id: env.VITE_OIDC_CLIENT_ID,
+// lazy-load OIDC configuration
+export const getOidcSettings = (): AuthProviderProps => ({
+  authority: config.oidcServerUri,
+  client_id: config.oidcClientId,
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: `${window.location.origin}`,
   response_type: "code",
@@ -25,4 +21,4 @@ export const oidcSettings: AuthProviderProps = {
     // Clear the callback URL from the browser history
     window.history.replaceState({}, document.title, window.location.origin);
   },
-};
+});

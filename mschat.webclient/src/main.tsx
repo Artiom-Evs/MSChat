@@ -8,6 +8,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import { config } from './config.ts';
 
 const theme = createTheme({
   palette: {
@@ -104,7 +105,11 @@ const theme = createTheme({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
+async function bootstrap() {
+  // initialize server-side app configuration
+  await config.init();
+
+  createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -112,3 +117,6 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+}
+bootstrap();
