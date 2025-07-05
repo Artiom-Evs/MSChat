@@ -19,5 +19,24 @@ services:
       - "5000:8080"
       - "5001:8081"
 
+  webapp:
+    build:
+      context: .
+      dockerfile: ./MSChat.WebBFF/Dockerfile
+      args:
+        VITE_OIDC_SERVER_URI: http://localhost:5000
+        VITE_CHAT_API_URI: http://localhost:5004
+        VITE_OIDC_CLIENT_ID: someclientid
+    container_name: webapp
+    ports:
+      - "5002:8080"
+      - "5003:8081"
+    depends_on:
+      - auth
+    
+
+   
+    
+      
 volumes:
   mssql_data:

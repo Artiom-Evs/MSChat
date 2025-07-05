@@ -19,20 +19,20 @@ RUN apt-get -y install nodejs
 FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["MSChat.Server/MSChat.Server.csproj", "MSChat.Server/"]
-COPY ["mschat.client/mschat.client.esproj", "mschat.client/"]
-RUN dotnet restore "./MSChat.Server/MSChat.Server.csproj"
+COPY ["MSChat.WebBFF/MSChat.WebBFF.csproj", "MSChat.WebBFF/"]
+COPY ["mschat.webclient/mschat.webclient.esproj", "mschat.webclient/"]
+RUN dotnet restore "./MSChat.WebBFF/MSChat.WebBFF.csproj"
 COPY . .
-WORKDIR "/src/MSChat.Server"
-RUN dotnet build "./MSChat.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/MSChat.WebBFF"
+RUN dotnet build "./MSChat.WebBFF.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MSChat.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./MSChat.WebBFF.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "MSChat.Server.dll"]
+ENTRYPOINT ["dotnet", "MSChat.WebBFF.dll"]
