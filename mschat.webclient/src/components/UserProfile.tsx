@@ -9,10 +9,10 @@ import {
   MenuItem,
 } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
-import { useAuthStore } from '../stores/authStore';
+import { useAuth } from 'react-oidc-context';
 
 const UserProfile: React.FC = () => {
-  const { user, isAuthenticated, logout, login } = useAuthStore();
+  const auth = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -24,19 +24,19 @@ const UserProfile: React.FC = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    auth.signoutRedirect();
     handleMenuClose();
   };
 
   const handleLogin = async () => {
     try {
-      await login();
+      await auth.signinRedirect();
     } catch (error) {
       console.error('Login failed:', error);
     }
   };
 
-  if (!isAuthenticated || !user) {
+  if (!auth.isAuthenticated || !auth.user) {
     return (
       <Box sx={{ textAlign: 'center', py: 2 }}>
         <Typography variant="h6" gutterBottom color="text.secondary">
@@ -54,6 +54,10 @@ const UserProfile: React.FC = () => {
     );
   }
 
+  const user = auth.user;
+  const userName = user.profile?.name || user.profile?.preferred_username || 'User';
+  const userEmail = user.profile?.email || '';
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
       <Avatar
@@ -64,7 +68,7 @@ const UserProfile: React.FC = () => {
           fontSize: '1.2rem',
         }}
       >
-        {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+        {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
       </Avatar>
       
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -77,7 +81,7 @@ const UserProfile: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          {user.name}
+          {userName}
         </Typography>
         <Typography
           variant="body2"
@@ -88,7 +92,7 @@ const UserProfile: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          {user.email}
+          {userEmail}
         </Typography>
       </Box>
       

@@ -1,18 +1,19 @@
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from 'react-oidc-context';
 import { queryClient } from './lib/queryClient';
 import Router from './components/Router';
-import { AuthProvider } from './auth/AuthContext';
+import { oidcSettings } from './auth/oidcSettings';
 
 function App() {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+    <AuthProvider {...oidcSettings}>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
           <Router />
-        </AuthProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

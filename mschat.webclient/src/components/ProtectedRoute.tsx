@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { useAuthStore } from '../stores/authStore';
+import { useAuthToken } from '../hooks/useAuthToken';
 import Layout from './Layout';
 import LoginPrompt from './LoginPrompt';
 
@@ -9,9 +9,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const auth = useAuthToken();
 
-  if (isLoading) {
+  if (auth.isLoading) {
     return (
       <Box
         sx={{
@@ -26,7 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!auth.isAuthenticated) {
     return <LoginPrompt />;
   }
 

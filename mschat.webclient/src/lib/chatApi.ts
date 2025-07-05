@@ -27,11 +27,14 @@ export const chatApiInstance: AxiosInstance = axios.create({
   },
 });
 
-// Auth interceptor will be set up in the auth context
-chatApiInstance.interceptors.request.use((config) => {
-  // Token will be injected by auth context
-  return config;
-});
+// Auth interceptor function that will be called from components
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    chatApiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete chatApiInstance.defaults.headers.common['Authorization'];
+  }
+};
 
 export const chatApi = {
   getChats: (): Promise<ChatDto[]> =>

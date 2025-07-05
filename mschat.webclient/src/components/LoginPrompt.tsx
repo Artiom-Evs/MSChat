@@ -1,13 +1,14 @@
 import React from 'react';
 import { Box, Button, Typography, Paper } from '@mui/material';
-import { useAuthStore } from '../stores/authStore';
+import { useAuth } from 'react-oidc-context';
+import { useAuthToken } from '../hooks/useAuthToken';
 
 const LoginPrompt: React.FC = () => {
-  const login = useAuthStore((state) => state.login);
-
+  const auth = useAuth();
+  
   const handleLogin = async () => {
     try {
-      await login();
+      await auth.signinRedirect();
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -37,6 +38,11 @@ const LoginPrompt: React.FC = () => {
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
           Welcome to MSChat
         </Typography>
+
+        {auth.error && (
+          <pre>{JSON.stringify(auth.error, null, 4)}</pre>
+        )}
+
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Please sign in to continue
         </Typography>
