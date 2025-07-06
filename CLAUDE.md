@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-MSChat is a multi-service application implementing the Backend for Frontend (BFF) pattern:
+MSChat is a multi-service application implementing microservices architecture with a Backend for Frontend (BFF) pattern:
 
-- **MSChat.Auth** - OrchardCore CMS-based OpenID Connect authentication server
-- **MSChat.WebBFF** - ASP.NET Core Web API that serves as the BFF and hosts the React frontend
-- **mschat.webclient** - React + TypeScript + Vite frontend application
+- **MSChat.Auth** - OrchardCore CMS-based OpenID Connect authentication server (.NET 8.0)
+- **MSChat.WebBFF** - ASP.NET Core minimal API serving React SPA and runtime configuration (.NET 9.0)
+- **MSChat.Chat** - Dedicated chat API service handling all chat functionality (.NET 9.0)
+- **mschat.webclient** - React + TypeScript + Material-UI frontend application
 
-The authentication service provides JWT tokens, while the WebBFF handles API requests and serves the React SPA in production.
+The authentication service provides JWT tokens, the Chat API handles all business logic, and the WebBFF serves the React SPA with minimal API surface.
 
 ## Development Commands
 
@@ -22,9 +23,10 @@ dotnet build
 # Run individual services
 dotnet run --project MSChat.Auth
 dotnet run --project MSChat.WebBFF
+dotnet run --project MSChat.Chat
 
 # Run with Docker
-docker-compose up
+docker compose up
 
 # Frontend development
 cd mschat.webclient
@@ -41,9 +43,11 @@ dotnet test
 
 ## Port Configuration
 
-- **MSChat.Auth**: 5000 (HTTP), 5001 (HTTPS), 8080/8081 (Docker)
-- **MSChat.WebBFF**: 5002 (HTTP), 5003 (HTTPS), 8080/8081 (Docker)  
+- **MSChat.Auth**: 5000 (HTTP), 5001 (HTTPS)
+- **MSChat.WebBFF**: 5002 (HTTP), 5003 (HTTPS)
+- **MSChat.Chat**: 5004 (HTTP), 5005 (HTTPS)
 - **React Dev Server**: 51188 (HTTPS)
+- **SQL Server**: 1433 (Docker)
 
 ## Key Technical Details
 
@@ -59,21 +63,48 @@ dotnet test
 - Production builds served as static files through ASP.NET Core
 
 ### Database
-- SQL Server 2022 (containerized)
-- Entity Framework Core with OrchardCore data layer
+- **MSChat.Auth**: SQLite database with OrchardCore schema
+- **MSChat.Chat**: SQL Server 2022 (containerized) with Entity Framework Core
+- Chat service includes: Chat, Message, ChatMember, and ChatMemberLink entities
 - Connection strings configured in docker-compose.yml
 
 ## Project Structure Notes
 
-- Both .NET projects use multi-stage Docker builds
-- OrchardCore configuration includes extensive localization support
-- Frontend follows standard React + TypeScript + Vite patterns
-- Launch profiles configured for HTTP/HTTPS/Docker environments
+- All .NET projects use multi-stage Docker builds
+- MSChat.Auth includes extensive OrchardCore localization support (20+ languages)
+- MSChat.Chat implements full REST API with JWT authentication and Entity Framework
+- Frontend uses React 19.1.0 + Material-UI + React Query + React Router
+- Complete chat application with user management, messaging, and participants
 
 ## Project-Specific Documentation
 
 For detailed information about each project, see their specific CLAUDE.md files:
 
-- **[MSChat.Auth/CLAUDE.md](MSChat.Auth/CLAUDE.md)** - Authentication service details, OrchardCore configuration, and security features
-- **[MSChat.WebBFF/CLAUDE.md](MSChat.WebBFF/CLAUDE.md)** - BFF service architecture, API endpoints, and React integration
-- **[mschat.webclient/CLAUDE.md](mschat.webclient/CLAUDE.md)** - React frontend architecture, TypeScript configuration, and component patterns
+- **[MSChat.Auth/CLAUDE.md](MSChat.Auth/CLAUDE.md)** - OrchardCore-based OpenID Connect authentication server
+- **[MSChat.WebBFF/CLAUDE.md](MSChat.WebBFF/CLAUDE.md)** - Minimal BFF serving React SPA and runtime configuration
+- **[MSChat.Chat/CLAUDE.md](MSChat.Chat/CLAUDE.md)** - Full-featured chat API with messaging, participants, and JWT auth
+- **[mschat.webclient/CLAUDE.md](mschat.webclient/CLAUDE.md)** - React frontend with Material-UI, real-time chat interface
+
+## Current Implementation Status
+
+### Fully Implemented Features
+- **Authentication**: Complete OIDC flow with JWT tokens
+- **Chat Management**: Create, edit, delete chats (Personal/Public types)
+- **Messaging**: Send, edit, delete messages with pagination
+- **User Management**: Member profiles, join/leave chats
+- **Frontend**: Complete Material-UI interface with routing and state management
+- **Database**: SQL Server with Entity Framework migrations
+- **Deployment**: Docker Compose setup for all services
+
+### Architecture Decisions
+- **Microservices**: Separate chat API from auth and BFF
+- **Authentication**: OrchardCore for enterprise-grade OIDC
+- **Frontend**: React 19.1.0 + Material-UI for modern UI
+- **Database**: SQL Server for chat data, SQLite for auth
+- **State Management**: React Query + Zustand for optimal performance
+
+### Development Workflow
+1. `docker compose up` - Start all services and database
+2. `dotnet run --project <service>` - Individual service development
+3. `cd mschat.webclient && npm run dev` - Frontend development with hot reload
+4. Database migrations handled automatically on service startup

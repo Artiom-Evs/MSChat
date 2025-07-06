@@ -11,6 +11,11 @@ MSChat.WebClient is a modern React application built with TypeScript and Vite, s
 - **React 19.1.0** - Latest React with modern features
 - **TypeScript 5.8.3** - Type safety and modern JavaScript
 - **Vite 7.0.0** - Fast build tool and development server
+- **Material-UI 7.2.0** - React components and design system
+- **React Router 7.6.3** - Client-side routing
+- **React Query 5.81.5** - Server state management
+- **React OIDC Context 3.3.0** - OpenID Connect authentication
+- **Zustand 5.0.6** - Client state management
 - **ESLint** - Code quality and linting
 
 ## Development Commands
@@ -41,7 +46,7 @@ npm run preview
 - **Port**: 51188 (configurable via `DEV_SERVER_PORT`)
 - **HTTPS**: Enabled with auto-generated certificates
 - **Certificate**: Managed via `dotnet dev-certs`
-- **Proxy**: API requests to `/weatherforecast` proxied to backend
+- **Proxy**: API requests proxied to MSChat.Auth and MSChat.Chat services
 
 ### Build Configuration
 - **Target**: ES2022 for modern browsers
@@ -53,60 +58,136 @@ npm run preview
 
 ```
 src/
-├── main.tsx          # Application entry point
-├── App.tsx           # Main application component
-├── App.css           # Component-specific styles
-├── index.css         # Global styles and theme
-└── vite-env.d.ts     # Vite TypeScript definitions
+├── main.tsx              # Application entry point
+├── App.tsx               # Main application component
+├── index.css             # Global styles and theme
+├── config.ts             # Runtime configuration
+├── components/           # Reusable React components
+│   ├── Layout.tsx        # Main layout wrapper
+│   ├── Router.tsx        # Application routing
+│   ├── ChatList.tsx      # Chat list display
+│   ├── ChatListItem.tsx  # Individual chat item
+│   ├── MessageList.tsx   # Message display list
+│   ├── MessageItem.tsx   # Individual message
+│   ├── MessageForm.tsx   # Message input form
+│   ├── Sidebar.tsx       # Navigation sidebar
+│   ├── UserProfile.tsx   # User profile display
+│   └── index.ts          # Component exports
+├── pages/                # Page components
+│   ├── ChatPage.tsx      # Main chat interface
+│   ├── CreateChatPage.tsx # Chat creation
+│   ├── UpdateChatPage.tsx # Chat editing
+│   ├── MemberPage.tsx    # Member management
+│   ├── SearchPage.tsx    # Search functionality
+│   └── index.ts          # Page exports
+├── hooks/                # Custom React hooks
+│   ├── useChats.ts       # Chat data management
+│   ├── useMessages.ts    # Message operations
+│   ├── useMembers.ts     # Member operations
+│   ├── useParticipants.ts # Participant management
+│   └── useAuthToken.ts   # Authentication token
+├── lib/                  # Utility libraries
+│   ├── chatApi.ts        # API client
+│   └── queryClient.ts    # React Query setup
+├── auth/                 # Authentication
+│   └── oidcSettings.ts   # OIDC configuration
+├── types/                # TypeScript definitions
+│   ├── Chat.ts           # Chat-related types
+│   └── index.ts          # Type exports
+├── utils/                # Utility functions
+│   └── dateUtils.ts      # Date formatting
+└── vite-env.d.ts         # Vite TypeScript definitions
 ```
 
 ## Component Architecture
 
-### Current Components
-- **App.tsx** - Main weather forecast display component
-- Uses functional components with React hooks
-- TypeScript interfaces for type safety (Forecast interface)
-- useState for local state management
-- useEffect for data fetching
+### Application Structure
+- **Material-UI Design System**: Consistent component library with theming
+- **Functional Components**: All components use React hooks pattern
+- **TypeScript**: Strong typing throughout the application
+- **Route-Based Pages**: React Router 7 for navigation
+- **Protected Routes**: Authentication-gated access to chat features
 
-### Data Fetching Pattern
+### Key Components
+- **Layout.tsx**: Main application shell with sidebar and content area
+- **Router.tsx**: Route definitions with authentication guards
+- **ChatList.tsx**: Displays user's chats with search and filtering
+- **MessageList.tsx**: Real-time message display with pagination
+- **MessageForm.tsx**: Message composition with send functionality
+- **UserProfile.tsx**: User information and authentication status
+
+### Data Management Pattern
 ```typescript
-// Current API integration pattern
-useEffect(() => {
-  fetch('/weatherforecast')
-    .then(response => response.json())
-    .then(data => setForecasts(data));
-}, []);
+// React Query for server state
+const { data: chats, isLoading } = useChats(searchTerm);
+
+// Custom hooks for API operations
+const createMessageMutation = useCreateMessage();
+const { mutate: sendMessage } = createMessageMutation;
+
+// Zustand for client state
+const useStore = create((set) => ({
+  selectedChatId: null,
+  setSelectedChatId: (id) => set({ selectedChatId: id })
+}));
 ```
 
 ## Styling Approach
 
-### CSS Strategy
-- Traditional CSS files with component-specific stylesheets
-- Global styles in `index.css` with theme support
-- Component styles in `App.css`
+### Material-UI Design System
+- **Component Library**: Material-UI 7.2.0 with comprehensive component set
+- **Theming**: Centralized theme configuration with Material Design principles
+- **Responsive Design**: Built-in responsive breakpoints and grid system
+- **Typography**: Material Design typography system
+- **Icons**: Material Icons integrated throughout the application
 
-### Design System
-- System fonts (system-ui, Avenir, Helvetica, Arial)
-- CSS custom properties for theming
-- Dark/light mode support via `prefers-color-scheme`
-- Bootstrap-like table styling
+### Custom Styling
+- **Global Styles**: `index.css` for application-wide styles and CSS reset
+- **CSS-in-JS**: Emotion styling engine with Material-UI
+- **Theme Customization**: Custom color palette and component overrides
+- **Responsive Layout**: Mobile-first design with responsive components
 
 ## API Integration
 
-### Current Integration
-- **Endpoint**: `/weatherforecast`
-- **Method**: Native fetch API
-- **Error Handling**: Basic response.ok checking
-- **Typing**: TypeScript interfaces for API responses
+### Production API Integration
+- **MSChat.Chat API**: Full REST API integration for chat functionality
+- **MSChat.Auth**: OpenID Connect authentication flow
+- **MSChat.WebBFF**: Runtime configuration endpoint
+- **React Query**: Server state management with caching and synchronization
+- **Custom Hooks**: Abstracted API operations (useChats, useMessages, etc.)
+
+### Authentication Flow
+- **OIDC Provider**: MSChat.Auth service integration
+- **React OIDC Context**: Handles authentication state and token management
+- **JWT Tokens**: Automatic token refresh and API authorization
+- **Protected Routes**: Authentication-gated access to application features
+
+### API Client Architecture
+```typescript
+// Centralized API client with authentication
+const apiClient = axios.create({
+  baseURL: config.chatApiUrl,
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+// Custom hooks for API operations
+export const useChats = (searchTerm?: string) => {
+  return useQuery({
+    queryKey: ['chats', searchTerm],
+    queryFn: () => chatApi.getChats(searchTerm)
+  });
+};
+```
 
 ### Proxy Configuration
 Development API requests are proxied through Vite:
 ```typescript
 // In vite.config.ts
 proxy: {
-  '/weatherforecast': {
-    target: 'https://localhost:7127',
+  '/api': {
+    target: 'https://localhost:5004', // MSChat.Chat
     secure: true,
     changeOrigin: true
   }
@@ -143,30 +224,56 @@ proxy: {
 
 ## Development Notes
 
-### Current State
-- Template-level implementation showing weather forecast
-- Single component architecture
-- Basic API integration pattern
-- No routing or complex state management yet
+## Current Implementation Status
 
-### Recommended Improvements
-1. Add React Router for navigation
-2. Implement proper state management (Context API or Redux)
-3. Add authentication integration with MSChat.Auth
-4. Create reusable component library
-5. Add proper error boundaries and loading states
-6. Implement chat-specific UI components
-7. Add comprehensive testing setup
+### Production-Ready Features
+- **Complete Chat Application**: Full-featured messaging interface
+- **Authentication**: OIDC integration with MSChat.Auth
+- **Real-time Interface**: Message sending, editing, and deletion
+- **Chat Management**: Create, edit, and delete chats
+- **User Management**: Member profiles and participant management
+- **Responsive Design**: Material-UI components with mobile support
+- **State Management**: React Query + Zustand for optimal performance
 
-### Integration Points
-- Receives authentication tokens from MSChat.Auth
-- Communicates with MSChat.WebBFF for API calls
-- Will implement chat functionality UI
-- Designed for production deployment via WebBFF static files
+### Implemented Features
+- **User Authentication**: Login/logout with OIDC flow
+- **Chat List**: Search and filter user's chats
+- **Messaging**: Send, edit, delete messages with real-time updates
+- **Chat Types**: Support for Personal and Public chat types
+- **Participants**: Join/leave chats, view member lists
+- **Navigation**: React Router with protected routes
+- **Error Handling**: User-friendly error messages and loading states
 
-## Certificate Management
+### Architecture Decisions
+- **Material-UI**: Comprehensive design system for consistent UI
+- **React Query**: Server state management with automatic caching
+- **React OIDC Context**: Simplified authentication state management
+- **Custom Hooks**: Abstracted API operations for reusability
+- **TypeScript**: Strong typing throughout the application
+- **Responsive Design**: Mobile-first approach with Material-UI breakpoints
 
-Development HTTPS certificates are automatically managed:
-- Generated via `dotnet dev-certs https`
-- Trusted for local development
-- Integrated with Vite dev server configuration
+### Integration Status
+- **MSChat.Auth**: Full OIDC authentication integration
+- **MSChat.Chat**: Complete REST API integration
+- **MSChat.WebBFF**: Runtime configuration and static file serving
+- **Docker**: Containerized deployment ready
+
+## Development Workflow
+
+### Local Development
+1. `npm run dev` - Start HTTPS development server on port 51188
+2. Hot reload enabled for rapid development
+3. API requests proxied to backend services
+4. Automatic TypeScript compilation and error checking
+
+### Production Build
+1. `npm run build` - Create optimized production build
+2. Static assets generated in `dist/` directory
+3. Build served by MSChat.WebBFF in production
+4. TypeScript compilation and optimization
+
+### Code Quality
+- **ESLint**: Modern flat configuration with React and TypeScript rules
+- **TypeScript**: Strict mode enabled for maximum type safety
+- **Hot Reload**: Vite HMR for instant development feedback
+- **Development Certificates**: HTTPS enabled with automatic certificate management

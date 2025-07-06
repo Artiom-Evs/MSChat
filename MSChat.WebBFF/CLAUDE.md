@@ -4,7 +4,7 @@ This file provides guidance specific to the MSChat.WebBFF Backend for Frontend s
 
 ## Project Overview
 
-MSChat.WebBFF is a Backend for Frontend (BFF) service built with ASP.NET Core 9.0 that serves as both an API gateway and static file server for the React frontend application.
+MSChat.WebBFF is a minimal Backend for Frontend (BFF) service built with ASP.NET Core 9.0 that primarily serves the React SPA and provides runtime configuration. The service has evolved from a full API gateway to a focused SPA host since chat functionality moved to the dedicated MSChat.Chat service.
 
 ## Technology Stack
 
@@ -23,7 +23,7 @@ dotnet run --project MSChat.WebBFF
 dotnet build MSChat.WebBFF
 
 # Run with Docker
-docker-compose up mschat-webbff
+docker compose up mschat-webbff
 ```
 
 ## Configuration
@@ -42,14 +42,16 @@ docker-compose up mschat-webbff
 ## API Endpoints
 
 ### Current Endpoints
-- **GET /weatherforecast** - Sample weather forecast data
-  - Returns 5-day weather forecast with random data
-  - Named "GetWeatherForecast" for OpenAPI
+- **GET /app-config** - Runtime configuration for React application
+  - Returns configuration object with service URLs and settings
+  - Used by React app to discover backend services
+  - Environment-specific configuration support
 
 ### API Architecture
-- Uses minimal APIs (`app.MapGet()`)
-- No traditional controllers or services yet
+- Uses minimal APIs with single configuration endpoint
+- No controllers or complex business logic
 - OpenAPI documentation available in development
+- Focus on serving React SPA and providing config
 
 ## Middleware Pipeline
 
@@ -64,35 +66,30 @@ Current middleware configuration:
 ## Security Considerations
 
 ### CORS Configuration
-**CRITICAL**: Current CORS setup is insecure for production:
-```csharp
-// This configuration is too permissive
-options.AllowAnyOrigin()
-       .AllowAnyHeader()
-       .AllowAnyMethod()
-       .AllowCredentials(); // Problematic with AllowAnyOrigin
-```
+CORS is configured to allow cross-origin requests for development:
+- Allows requests from React development server
+- Configured for local development scenarios
+- Should be restricted for production deployment
 
-### Missing Security Features
-- No authentication middleware
-- No authorization policies
-- No integration with MSChat.Auth
-- No JWT token validation
-- No rate limiting or security headers
+### Current Security Status
+- **Authentication**: Not required for this minimal BFF
+- **Authorization**: No protected endpoints currently
+- **JWT Integration**: Not implemented (chat API handles auth)
+- **Security Headers**: Basic HTTPS redirection configured
 
 ## React Frontend Integration
 
 ### Development Mode
-- SPA proxy integrates React dev server
-- Vite serves frontend on port 51188
-- API calls proxied through Vite configuration
-- Hot reload and debugging support
+- SPA proxy integrates with React dev server (port 51188)
+- Hot reload support for React development
+- Configuration endpoint provides runtime settings
+- Vite handles API proxying to backend services
 
 ### Production Mode
-- React build output copied to wwwroot
-- Static files served by ASP.NET Core
+- React build output served from wwwroot as static files
 - Client-side routing via fallback to index.html
-- No SPA proxy in production
+- Single configuration endpoint for service discovery
+- Optimized static file serving with caching
 
 ## Key Dependencies
 
@@ -100,25 +97,47 @@ options.AllowAnyOrigin()
 - **Microsoft.AspNetCore.SpaProxy** - React development integration
 - **Microsoft.VisualStudio.Azure.Containers.Tools.Targets** - Docker support
 
-## Development Notes
+## Current Implementation Status
 
-### Current State
-- Template-level implementation with minimal business logic
-- Only demo weather forecast endpoint
-- No real chat functionality implemented
-- Basic logging and error handling
+### Service Role
+- **Primary Function**: Serve React SPA and provide runtime configuration
+- **Architecture**: Minimal BFF with single configuration endpoint
+- **Dependencies**: React build output and configuration management
 
-### Recommended Improvements
-1. Implement proper CORS policies for production
-2. Integrate authentication with MSChat.Auth service
-3. Add JWT token validation middleware
-4. Implement real API endpoints for chat functionality
-5. Add proper error handling and logging
-6. Include health checks and monitoring
-7. Add rate limiting and security headers
+### Production-Ready Features
+- **SPA Hosting**: Complete React application serving with static file optimization
+- **Runtime Config**: `/app-config` endpoint for service discovery
+- **Development Integration**: SPA proxy for hot reload development
+- **Static File Serving**: Optimized serving with appropriate caching headers
+- **Client Routing**: Fallback to index.html for React Router support
 
-### Integration Points
-- Should authenticate users via MSChat.Auth
-- Will serve as API gateway for chat functionality
-- Hosts React SPA in production deployments
-- Provides backend services for frontend features
+### Configuration Management
+- **WebClientOptions**: Strongly-typed configuration for frontend settings
+- **Environment-Specific**: Different configs for development/production
+- **Service URLs**: Provides backend service endpoints to React app
+
+## Integration Points
+
+### Current Architecture
+- **MSChat.Auth**: React app authenticates directly with auth service
+- **MSChat.Chat**: React app calls chat API directly (no proxying)
+- **Frontend**: Serves complete React application with Material-UI
+
+### Service Dependencies
+- **Minimal Dependencies**: No direct integration with other services
+- **Configuration Provider**: Supplies service URLs to React application
+- **Static Asset Host**: Serves React build in production
+
+## Development Workflow
+
+### Local Development
+1. `dotnet run --project MSChat.WebBFF` - Start BFF service
+2. SPA proxy automatically starts React dev server
+3. React app gets configuration from `/app-config`
+4. Hot reload works through Vite development server
+
+### Production Deployment
+1. React build copied to `wwwroot` directory
+2. Static files served with optimized caching
+3. Configuration endpoint provides runtime settings
+4. Client-side routing handled via SPA fallback
