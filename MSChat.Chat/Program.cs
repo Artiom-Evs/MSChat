@@ -32,17 +32,17 @@ builder.Services.
     })
     .AddJwtBearer(options =>
     {
-        options.Authority = authSettings.Issuer;
+        options.Authority = authSettings.Authority;
         options.Audience = AppConstants.Audience;
-        options.RequireHttpsMetadata = true;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
+            ValidIssuer = authSettings.ValidIssuer,
+            ValidAudience = AppConstants.Audience,
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidIssuer = authSettings.Issuer,
-            ValidAudience = AppConstants.Audience,
         };
     });
 

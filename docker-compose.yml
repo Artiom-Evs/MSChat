@@ -27,10 +27,29 @@ services:
     ports:
       - "5002:8080"
       - "5003:8081"
+    depends_on:
+      - auth
     environment:
       - WebClient__OidcServerUri=http://localhost:5000
       - WebClient__OidcClientId=mschat.webclient
       - WebClient__ChatApiUri=http://localhost:5004
+      
+  chatapi:
+    build:
+      context: .
+      dockerfile: ./MSChat.Chat/Dockerfile
+    container_name: chatapi
+    ports:
+      - "5004:8080"
+      - "5005:8081"
+    depends_on:
+      - auth
+      - mssql
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__ChatDBConnection=Server=mssql;Database=MSChat.Chat;User Id=sa;Password=TopSec1!;Encrypt=True;TrustServerCertificate=True;
+      - ApiAuth__Authority=http://auth:8080
+      - ApiAuth__ValidIssuer=http://localhost:5000/
       
 volumes:
   mssql_data:

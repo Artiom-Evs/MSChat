@@ -44,146 +44,124 @@ class ChatApiService {
     }
   }
 
-  getChats(): Promise<ChatDto[]> {
-    return this.instance
-      .get<ChatDto[]>("v1/chats")
-      .then((response) => response.data);
-  }
+  getChats = (): Promise<ChatDto[]> =>
+    this.instance.get<ChatDto[]>("v1/chats").then((response) => response.data);
 
-  getChat(chatId: number): Promise<ChatDto | null> {
-    return this.instance
+  getChat = (chatId: number): Promise<ChatDto | null> =>
+    this.instance
       .get<ChatDto | null>(`v1/chats/${chatId}`)
       .then((response) => response.data);
-  }
 
-  createChat(chat: CreateChatDto): Promise<ChatDto> {
-    return this.instance
+  createChat = (chat: CreateChatDto): Promise<ChatDto> =>
+    this.instance
       .post<ChatDto>("v1/chats", chat)
       .then((response) => response.data);
-  }
 
-  updateChat(chatId: number, chat: UpdateChatDto): Promise<void> {
-    return this.instance.put(`v1/chats/${chatId}`, chat).then(() => {});
-  }
+  updateChat = (chatId: number, chat: UpdateChatDto): Promise<void> =>
+    this.instance.put(`v1/chats/${chatId}`, chat).then(() => {});
 
-  deleteChat(chatId: number): Promise<void> {
-    return this.instance.delete(`v1/chats/${chatId}`).then(() => {});
-  }
+  deleteChat = (chatId: number): Promise<void> =>
+    this.instance.delete(`v1/chats/${chatId}`).then(() => {});
 
   // Participant management
-  getChatParticipants(chatId: number): Promise<ChatParticipantDto[]> {
-    return this.instance
+  getChatParticipants = (chatId: number): Promise<ChatParticipantDto[]> =>
+    this.instance
       .get<ChatParticipantDto[]>(`v1/chats/${chatId}/participants`)
       .then((response) => response.data);
-  }
 
-  addParticipant(
+  addParticipant = (
     chatId: number,
     participant: AddParticipantDto
-  ): Promise<ChatParticipantDto> {
-    return this.instance
+  ): Promise<ChatParticipantDto> =>
+    this.instance
       .post<ChatParticipantDto>(`v1/chats/${chatId}/participants`, participant)
       .then((response) => response.data);
-  }
 
-  updateParticipantRole(
+  updateParticipantRole = (
     chatId: number,
     participantMemberId: number,
     roleUpdate: UpdateParticipantRoleDto
-  ): Promise<void> {
-    return this.instance
+  ): Promise<void> =>
+    this.instance
       .put(
         `v1/chats/${chatId}/participants/${participantMemberId}/role`,
         roleUpdate
       )
       .then(() => {});
-  }
 
-  removeParticipant(
+  removeParticipant = (
     chatId: number,
     participantMemberId: number
-  ): Promise<void> {
-    return this.instance
+  ): Promise<void> =>
+    this.instance
       .delete(`v1/chats/${chatId}/participants/${participantMemberId}`)
       .then(() => {});
-  }
 
-  joinChat(chatId: number): Promise<void> {
-    return this.instance
-      .post(`v1/chats/${chatId}/participants/join`)
-      .then(() => {});
-  }
+  joinChat = (chatId: number): Promise<void> =>
+    this.instance.post(`v1/chats/${chatId}/participants/join`).then(() => {});
 
-  leaveChat(chatId: number): Promise<void> {
-    return this.instance
-      .post(`v1/chats/${chatId}/participants/leave`)
-      .then(() => {});
-  }
+  leaveChat = (chatId: number): Promise<void> =>
+    this.instance.post(`v1/chats/${chatId}/participants/leave`).then(() => {});
 
   // Members management
-  getMembers(search?: string): Promise<MemberDto[]> {
-    return this.instance
+  getMembers = (search?: string): Promise<MemberDto[]> =>
+    this.instance
       .get<MemberDto[]>("v1/members", {
         params: search ? { search } : undefined,
       })
       .then((response) => response.data);
-  }
 
-  getMember(memberId: number): Promise<MemberDto | null> {
-    return this.instance
+  getMember = (memberId: number): Promise<MemberDto | null> =>
+    this.instance
       .get<MemberDto | null>(`v1/members/${memberId}`)
       .then((response) => response.data);
-  }
 
-  getCurrentMember(): Promise<MemberDto | null> {
-    return this.instance
+  getCurrentMember = (): Promise<MemberDto | null> =>
+    this.instance
       .get<MemberDto | null>("v1/members/me")
       .then((response) => response.data);
-  }
 
   // Messages management
-  getMessages(
+  getMessages = (
     chatId: number,
     page: number = 1,
     pageSize: number = 50
-  ): Promise<MessageDto[]> {
-    return this.instance
+  ): Promise<MessageDto[]> =>
+    this.instance
       .get<MessageDto[]>(`v1/chats/${chatId}/messages`, {
         params: { page, pageSize },
       })
       .then((response) => response.data);
-  }
 
-  getMessage(chatId: number, messageId: number): Promise<MessageDto | null> {
-    return this.instance
+  getMessage = (
+    chatId: number,
+    messageId: number
+  ): Promise<MessageDto | null> =>
+    this.instance
       .get<MessageDto | null>(`v1/chats/${chatId}/messages/${messageId}`)
       .then((response) => response.data);
-  }
 
-  createMessage(
+  createMessage = (
     chatId: number,
     message: CreateMessageDto
-  ): Promise<MessageDto> {
-    return this.instance
+  ): Promise<MessageDto> =>
+    this.instance
       .post<MessageDto>(`v1/chats/${chatId}/messages`, message)
       .then((response) => response.data);
-  }
 
-  updateMessage(
+  updateMessage = (
     chatId: number,
     messageId: number,
     message: UpdateMessageDto
-  ): Promise<void> {
-    return this.instance
+  ): Promise<void> =>
+    this.instance
       .put(`v1/chats/${chatId}/messages/${messageId}`, message)
       .then(() => {});
-  }
 
-  deleteMessage(chatId: number, messageId: number): Promise<void> {
-    return this.instance
+  deleteMessage = (chatId: number, messageId: number): Promise<void> =>
+    this.instance
       .delete(`v1/chats/${chatId}/messages/${messageId}`)
       .then(() => {});
-  }
 }
 
 export const chatApi = new ChatApiService();
