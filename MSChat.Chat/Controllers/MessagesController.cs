@@ -1,11 +1,14 @@
 using System.Net;
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MSChat.Chat.Commands;
 using MSChat.Chat.Data;
 using MSChat.Chat.Models;
 using MSChat.Chat.Models.DTOs;
+using MSChat.Chat.Queries;
 using MSChat.Chat.Services;
 
 namespace MSChat.Chat.Controllers;
@@ -16,13 +19,15 @@ namespace MSChat.Chat.Controllers;
 public class MessagesController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly IMessagesService _messagesService;
-
-    public MessagesController(ApplicationDbContext context, IMessagesService messagesService)
+    private readonly ISender _mediatr;
+    
+    public MessagesController(ApplicationDbContext dbContext, ISender commandBus)
     {
-        _dbContext = context;
-        _messagesService = messagesService;
+        _dbContext = dbContext;
+        _mediatr = commandBus;
     }
+
+
 
     /// <summary>
     /// Get messages for a specific chat with pagination
@@ -48,7 +53,8 @@ public class MessagesController : ControllerBase
 
         try
         {
-            var messages = await _messagesService.GetMessagesAsync(member.Id, chatId, page, pageSize);
+            var query = new GetMessagesQuery(member.Id, chatId, page, pageSize);
+            var messages = await _mediatr.Send(query);
             return Ok(messages);
         }
         catch (UnauthorizedAccessException)
@@ -74,7 +80,8 @@ public class MessagesController : ControllerBase
 
         try
         {
-            var message = await _messagesService.GetMessageByIdAsync(member.Id, messageId);
+            var query = new GetMessageQuery(member.Id, chatId, messageId);
+            var message = await _mediatr.Send(query);
             
             if (message == null)
             {
@@ -118,7 +125,8 @@ public class MessagesController : ControllerBase
 
         try
         {
-            var message = await _messagesService.CreateMessageAsync(member.Id, chatId, createMessageDto);
+            var cmd = new SendMessageCommand(member.Id, chatId, createMessageDto);
+            var message = await _mediatr.Send(cmd);
             return CreatedAtAction(nameof(GetMessage), new { chatId, messageId = message.Id }, message);
         }
         catch (UnauthorizedAccessException)
@@ -155,7 +163,8 @@ public class MessagesController : ControllerBase
 
         try
         {
-            await _messagesService.UpdateMessageAsync(member.Id, messageId, updateMessageDto);
+            var cmd = new UpdateMessageCommand(member.Id, chatId, messageId, updateMessageDto);
+            await _mediatr.Send(cmd);
             return NoContent();
         }
         catch (UnauthorizedAccessException)
@@ -189,7 +198,8 @@ public class MessagesController : ControllerBase
 
         try
         {
-            await _messagesService.DeleteMessageAsync(member.Id, messageId);
+            var cmd = new DeleteMessageCommand(member.Id, chatId, messageId);
+            await _mediatr.Send(cmd);
             return NoContent();
         }
         catch (UnauthorizedAccessException)

@@ -5,6 +5,7 @@ using MSChat.Chat;
 using MSChat.Chat.Configurations;
 using MSChat.Chat.Data;
 using MSChat.Chat.Handlers;
+using MSChat.Chat.Hubs;
 using MSChat.Chat.Requirements;
 using MSChat.Chat.Services;
 using System.ComponentModel.DataAnnotations;
@@ -68,6 +69,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddSignalR();
+builder.Services.AddMediatR(o => o.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
 builder.Services.AddScoped<IChatsService, ChatsService>();
 builder.Services.AddScoped<IMembersService, MembersService>();
@@ -91,6 +94,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<ChatHub>("/_hubs/chat");
 app.MapControllers();
 
 app.Run();
