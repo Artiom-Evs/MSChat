@@ -14,12 +14,12 @@ const ChatHubContext = createContext<ChatHubContextType>({
 
 export const useChatHub = () => useContext(ChatHubContext);
 
-type Props = {
+type ChatHubProps = {
   children: React.ReactNode;
   hubUrl: string;
 };
 
-export const ChatHubProvider: React.FC<Props> = ({ children, hubUrl }) => {
+export const ChatHubProvider: React.FC<ChatHubProps> = ({ children, hubUrl }) => {
   const connectionRef = useRef<HubConnection | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const auth = useAuth();
