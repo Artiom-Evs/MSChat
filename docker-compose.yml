@@ -50,6 +50,7 @@ services:
       - ConnectionStrings__ChatDBConnection=Server=mssql;Database=MSChat.Chat;User Id=sa;Password=TopSec1!;Encrypt=True;TrustServerCertificate=True;
       - ApiAuth__Authority=http://auth:8080
       - ApiAuth__ValidIssuer=http://localhost:5000/
+      - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
       
 volumes:
   mssql_data:

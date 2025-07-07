@@ -22,8 +22,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var authSettings = builder.Configuration
     .GetRequiredSection(ApiAuthSettings.Position)
     .Get<ApiAuthSettings>()!;
-var validationContext = new ValidationContext(authSettings);
-Validator.ValidateObject(authSettings!, validationContext, validateAllProperties: true);
+var authSettingsValidationContext = new ValidationContext(authSettings);
+Validator.ValidateObject(authSettings!, authSettingsValidationContext, validateAllProperties: true);
+
+// get validated API CORS settings
+var corsSettings = builder.Configuration
+    .GetRequiredSection(CorsSettings.Position)
+    .Get<CorsSettings>()!;
+var corsSettingsValidationContext = new ValidationContext(corsSettings);
+Validator.ValidateObject(corsSettings!, corsSettingsValidationContext, validateAllProperties: true);
 
 builder.Services.
     AddAuthentication(options =>
@@ -60,9 +67,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.WithOrigins(corsSettings.AllowedOrigins.Split(","))
                .AllowAnyMethod()
-               .AllowAnyHeader();
+               .AllowAnyHeader()
+               .AllowCredentials();
     }); ;
 });
 
