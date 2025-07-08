@@ -44,5 +44,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ChatMemberLink>()
             .Property(cm => cm.RoleInChat)
             .HasDefaultValue(ChatRole.Member);
+
+        modelBuilder.Entity<Message>()
+            .HasIndex(m => new { m.ChatId, m.IdInChat })
+            .IsUnique();
     }
 }

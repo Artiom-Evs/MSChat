@@ -3,6 +3,7 @@ namespace MSChat.Chat.Models;
 public class Message
 {
     public long Id { get; set; }
+    public long IdInChat { get; set; }
     public long ChatId { get; set; }
     public long SenderId { get; set; }
     public string Text { get; set; } = "";

@@ -8,11 +8,13 @@ namespace MSChat.Chat.Services;
 public class MessagesService : IMessagesService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IChatMessageIdGenerator _idGenerator;
     private readonly ILogger<MessagesService> _logger;
 
-    public MessagesService(ApplicationDbContext dbContext, ILogger<MessagesService> logger)
+    public MessagesService(ApplicationDbContext dbContext, IChatMessageIdGenerator idGenerator, ILogger<MessagesService> logger)
     {
         _dbContext = dbContext;
+        _idGenerator = idGenerator;
         _logger = logger;
     }
 
@@ -44,7 +46,7 @@ public class MessagesService : IMessagesService
                   member => member.Id,
                   (m, member) => new MessageDto
                   {
-                      Id = m.Id,
+                      Id = m.IdInChat,
                       ChatId = m.ChatId,
                       SenderId = m.SenderId,
                       SenderName = member.Name,
@@ -59,10 +61,10 @@ public class MessagesService : IMessagesService
         return messages.OrderBy(m => m.CreatedAt);
     }
 
-    public async Task<MessageDto?> GetMessageByIdAsync(long memberId, long messageId)
+    public async Task<MessageDto?> GetMessageByIdAsync(long memberId, long chatId, long messageIdInChat)
     {
         var message = await _dbContext.Messages
-            .Where(m => m.Id == messageId)
+            .Where(m => m.ChatId == chatId && m.IdInChat == messageIdInChat)
             .Join(_dbContext.Members,
                   m => m.SenderId,
                   member => member.Id,
@@ -92,7 +94,7 @@ public class MessagesService : IMessagesService
 
         return new MessageDto
         {
-            Id = message.Message.Id,
+            Id = message.Message.IdInChat,
             ChatId = message.Message.ChatId,
             SenderId = message.Message.SenderId,
             SenderName = message.Member.Name,
@@ -124,8 +126,11 @@ public class MessagesService : IMessagesService
             throw new KeyNotFoundException("Chat not found or has been deleted");
         }
 
+        long idInChat = await _idGenerator.GetNextIdInChatAsync(chatId);
+
         var message = new Message
         {
+            IdInChat = idInChat,
             ChatId = chatId,
             SenderId = memberId,
             Text = createMessageDto.Text,
@@ -139,7 +144,7 @@ public class MessagesService : IMessagesService
         var member = await _dbContext.Members.FindAsync(memberId);
         return new MessageDto
         {
-            Id = message.Id,
+            Id = message.IdInChat,
             ChatId = message.ChatId,
             SenderId = message.SenderId,
             SenderName = member?.Name ?? "Unknown",
@@ -151,10 +156,10 @@ public class MessagesService : IMessagesService
         };
     }
 
-    public async Task UpdateMessageAsync(long memberId, long messageId, UpdateMessageDto updateMessageDto)
+    public async Task UpdateMessageAsync(long memberId, long chatId, long messageIdInChat, UpdateMessageDto updateMessageDto)
     {
         var message = await _dbContext.Messages
-            .FirstOrDefaultAsync(m => m.Id == messageId);
+            .FirstOrDefaultAsync(m => m.ChatId == chatId && m.IdInChat == messageIdInChat);
 
         if (message == null)
         {
@@ -182,7 +187,7 @@ public class MessagesService : IMessagesService
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!await MessageExistsAsync(messageId))
+            if (!await MessageExistsAsync(message.Id))
             {
                 throw new KeyNotFoundException("Message not found");
             }
@@ -193,10 +198,10 @@ public class MessagesService : IMessagesService
         }
     }
 
-    public async Task DeleteMessageAsync(long memberId, long messageId)
+    public async Task DeleteMessageAsync(long memberId, long chatId, long messageIdInChat)
     {
         var message = await _dbContext.Messages
-            .FirstOrDefaultAsync(m => m.Id == messageId);
+            .FirstOrDefaultAsync(m => m.ChatId == chatId && m.IdInChat == messageIdInChat);
 
         if (message == null)
         {
@@ -225,7 +230,7 @@ public class MessagesService : IMessagesService
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!await MessageExistsAsync(messageId))
+            if (!await MessageExistsAsync(message.Id))
             {
                 throw new KeyNotFoundException("Message not found");
             }
