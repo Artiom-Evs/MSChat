@@ -18,7 +18,7 @@ public class MessagesService : IMessagesService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<MessageDto>> GetMessagesAsync(long memberId, long chatId, int page = 1, int pageSize = 50)
+    public async Task<IEnumerable<MessageDto>> GetMessagesAsync(long memberId, long chatId, int limit, long? offset)
     {
         // Verify user is a member of the chat
         var isMember = await _dbContext.ChatMemberLinks
@@ -36,26 +36,40 @@ public class MessagesService : IMessagesService
             }
         }
 
-        var messages = await _dbContext.Messages
-            .Where(m => m.ChatId == chatId)
-            .OrderByDescending(m => m.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var query = _dbContext.Messages
+            .Where(m => m.ChatId == chatId);
+
+        // take last messages by limit if offset is null
+        if (offset == null)
+        {
+            query = query
+                .OrderByDescending(m => m.Id)
+                .Take(limit);
+        }
+        else
+        {
+            query = query
+                .OrderBy(m => m.Id)
+                .Where(m => m.IdInChat > offset)
+                .Take(limit);
+        }
+
+        var messages = await query
             .Join(_dbContext.Members,
-                  m => m.SenderId,
-                  member => member.Id,
-                  (m, member) => new MessageDto
-                  {
-                      Id = m.IdInChat,
-                      ChatId = m.ChatId,
-                      SenderId = m.SenderId,
-                      SenderName = member.Name,
-                      SenderPhotoUrl = member.PhotoUrl,
-                      Text = m.Text,
-                      CreatedAt = m.CreatedAt,
-                      UpdatedAt = m.UpdatedAt,
-                      DeletedAt = m.DeletedAt
-                  })
+                    m => m.SenderId,
+                    member => member.Id,
+                    (m, member) => new MessageDto
+                    {
+                        Id = m.IdInChat,
+                        ChatId = m.ChatId,
+                        SenderId = m.SenderId,
+                        SenderName = member.Name,
+                        SenderPhotoUrl = member.PhotoUrl,
+                        Text = m.Text,
+                        CreatedAt = m.CreatedAt,
+                        UpdatedAt = m.UpdatedAt,
+                        DeletedAt = m.DeletedAt
+                    })
             .ToListAsync();
 
         return messages.OrderBy(m => m.CreatedAt);

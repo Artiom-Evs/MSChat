@@ -3,6 +3,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using MSChat.Chat.Commands;
 using MSChat.Chat.Data;
@@ -42,18 +43,25 @@ public class MessagesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(
         long chatId, 
-        [FromQuery] int page = 1, 
-        [FromQuery] int pageSize = 50)
+        [FromQuery] int limit= 50, 
+        [FromQuery] long? offset = null)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 50;
-        if (pageSize > 100) pageSize = 100;
+        if (limit < 1 || limit > 100)
+        {
+            ModelState.AddModelError("InvalidQueryParam", "\"limit\" should be in range between 1 and 100.");
+            return BadRequest(ModelState);
+        }
+        else if (offset < 1)
+        {
+            ModelState.AddModelError("InvalidQueryParam", "\"offset\" should be more then 0.");
+            return BadRequest(ModelState);
+        }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+            var member = await GetOrCreateChatMemberAsync(HttpContext);
 
         try
         {
-            var query = new GetMessagesQuery(member.Id, chatId, page, pageSize);
+            var query = new GetMessagesQuery(member.Id, chatId, limit, offset);
             var messages = await _mediatr.Send(query);
             return Ok(messages);
         }

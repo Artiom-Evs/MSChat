@@ -16,6 +16,6 @@ public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, IEnumer
 
     public async Task<IEnumerable<MessageDto>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
     {
-        return await _messagesService.GetMessagesAsync(request.MemberId, request.ChatId, request.Page, request.PageSize);
+        return await _messagesService.GetMessagesAsync(request.MemberId, request.ChatId, request.Limit, request.Offset);
     }
 }
