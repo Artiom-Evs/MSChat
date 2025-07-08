@@ -21,10 +21,10 @@ public class MessagesService : IMessagesService
     public async Task<IEnumerable<MessageDto>> GetMessagesAsync(long memberId, long chatId, int limit, long? offset)
     {
         // Verify user is a member of the chat
-        var isMember = await _dbContext.ChatMemberLinks
-            .AnyAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+        var chatMembership = await _dbContext.ChatMemberships
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
-        if (!isMember)
+        if (chatMembership == null)
         {
             // Check if it's a public chat
             var isPublicChat = await _dbContext.Chat
@@ -72,11 +72,34 @@ public class MessagesService : IMessagesService
                     })
             .ToListAsync();
 
+        if (chatMembership != null && messages.Any())
+        {
+            var lastMessageId = messages.Max(m => m.Id);
+            chatMembership.LastReadedMessageId = lastMessageId;
+            await _dbContext.SaveChangesAsync();
+        }
+
         return messages.OrderBy(m => m.CreatedAt);
     }
 
     public async Task<MessageDto?> GetMessageByIdAsync(long memberId, long chatId, long messageIdInChat)
     {
+        // Verify user is a member of the chat
+        var chatMembership = await _dbContext.ChatMemberships
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+
+        if (chatMembership == null)
+        {
+            // Check if it's a public chat
+            var isPublicChat = await _dbContext.Chat
+                .AnyAsync(c => c.Id == chatId && c.Type == ChatType.Public);
+
+            if (!isPublicChat)
+            {
+                throw new UnauthorizedAccessException("User is not a member of this chat");
+            }
+        }
+
         var message = await _dbContext.Messages
             .Where(m => m.ChatId == chatId && m.IdInChat == messageIdInChat)
             .Join(_dbContext.Members,
@@ -90,20 +113,10 @@ public class MessagesService : IMessagesService
             return null;
         }
 
-        // Verify user is a member of the chat
-        var isMember = await _dbContext.ChatMemberLinks
-            .AnyAsync(cml => cml.ChatId == message.Message.ChatId && cml.MemberId == memberId);
-
-        if (!isMember)
+        if (chatMembership != null)
         {
-            // Check if it's a public chat
-            var isPublicChat = await _dbContext.Chat
-                .AnyAsync(c => c.Id == message.Message.ChatId && c.Type == ChatType.Public);
-
-            if (!isPublicChat)
-            {
-                throw new UnauthorizedAccessException("User is not a member of this chat");
-            }
+            chatMembership.LastReadedMessageId = message.Message.IdInChat;
+            await _dbContext.SaveChangesAsync();
         }
 
         return new MessageDto
@@ -123,7 +136,7 @@ public class MessagesService : IMessagesService
     public async Task<MessageDto> CreateMessageAsync(long memberId, long chatId, CreateMessageDto createMessageDto)
     {
         // Verify user is a member of the chat
-        var isMember = await _dbContext.ChatMemberLinks
+        var isMember = await _dbContext.ChatMemberships
             .AnyAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
         if (!isMember)
@@ -226,7 +239,7 @@ public class MessagesService : IMessagesService
         if (message.SenderId != memberId)
         {
             // Check if user is a chat owner
-            var isOwner = await _dbContext.ChatMemberLinks
+            var isOwner = await _dbContext.ChatMemberships
                 .AnyAsync(cml => cml.ChatId == message.ChatId && cml.MemberId == memberId && cml.RoleInChat == ChatRole.Owner);
 
             if (!isOwner)

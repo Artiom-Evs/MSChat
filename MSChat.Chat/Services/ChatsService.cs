@@ -176,7 +176,7 @@ public class ChatsService : IChatsService
         _dbContext.Chat.Add(chat);
         
         // Add both members to the chat
-        _dbContext.ChatMemberLinks.Add(new ChatMemberLink
+        _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
             MemberId = memberId,
@@ -184,7 +184,7 @@ public class ChatsService : IChatsService
             JoinedAt = DateTime.UtcNow
         });
         
-        _dbContext.ChatMemberLinks.Add(new ChatMemberLink
+        _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
             MemberId = createChatDto.OtherMemberId.Value,
@@ -230,7 +230,7 @@ public class ChatsService : IChatsService
         };
 
         _dbContext.Chat.Add(chat);
-        _dbContext.ChatMemberLinks.Add(new ChatMemberLink
+        _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
             MemberId = memberId,
@@ -276,7 +276,7 @@ public class ChatsService : IChatsService
             throw new KeyNotFoundException("Chat not found or user is not a member");
         }
 
-        var chatMemberLink = await _dbContext.ChatMemberLinks
+        var chatMemberLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
         if (chatMemberLink?.RoleInChat != ChatRole.Owner)
@@ -313,7 +313,7 @@ public class ChatsService : IChatsService
             throw new KeyNotFoundException("Chat not found or user is not a member");
         }
 
-        var chatMemberLink = await _dbContext.ChatMemberLinks
+        var chatMemberLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
         if (chatMemberLink?.RoleInChat != ChatRole.Owner)

@@ -19,7 +19,7 @@ public class ChatParticipantsService : IChatParticipantsService
     public async Task<IEnumerable<ChatParticipantDto>> GetChatParticipantsAsync(long requestingMemberId, long chatId)
     {
         // Check if requesting member has access to the chat
-        var hasAccess = await _dbContext.ChatMemberLinks
+        var hasAccess = await _dbContext.ChatMemberships
             .AnyAsync(cml => cml.ChatId == chatId && (cml.Chat.Type == ChatType.Public || cml.MemberId == requestingMemberId));
 
         if (!hasAccess)
@@ -27,7 +27,7 @@ public class ChatParticipantsService : IChatParticipantsService
             throw new UnauthorizedAccessException("Access denied to chat participants");
         }
 
-        var participants = await _dbContext.ChatMemberLinks
+        var participants = await _dbContext.ChatMemberships
             .Where(cml => cml.ChatId == chatId)
             .Select(cml => new ChatParticipantDto
             {
@@ -46,7 +46,7 @@ public class ChatParticipantsService : IChatParticipantsService
     public async Task<ChatParticipantDto> AddParticipantAsync(long requestingMemberId, long chatId, AddParticipantDto addParticipantDto)
     {
         // Check if requesting member is owner of the chat
-        var requestingMemberLink = await _dbContext.ChatMemberLinks
+        var requestingMemberLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == requestingMemberId);
 
         if (requestingMemberLink == null)
@@ -67,7 +67,7 @@ public class ChatParticipantsService : IChatParticipantsService
         }
 
         // Check if member is already in the chat
-        var existingLink = await _dbContext.ChatMemberLinks
+        var existingLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == addParticipantDto.MemberId);
 
         if (existingLink != null)
@@ -82,7 +82,7 @@ public class ChatParticipantsService : IChatParticipantsService
             throw new InvalidOperationException("Cannot add participants to personal chats");
         }
 
-        var newParticipantLink = new ChatMemberLink
+        var newParticipantLink = new ChatMembership
         {
             ChatId = chatId,
             MemberId = addParticipantDto.MemberId,
@@ -90,7 +90,7 @@ public class ChatParticipantsService : IChatParticipantsService
             JoinedAt = DateTime.UtcNow
         };
 
-        _dbContext.ChatMemberLinks.Add(newParticipantLink);
+        _dbContext.ChatMemberships.Add(newParticipantLink);
         await _dbContext.SaveChangesAsync();
 
         return new ChatParticipantDto
@@ -107,7 +107,7 @@ public class ChatParticipantsService : IChatParticipantsService
     public async Task UpdateParticipantRoleAsync(long requestingMemberId, long chatId, long participantMemberId, UpdateParticipantRoleDto updateRoleDto)
     {
         // Check if requesting member is owner of the chat
-        var requestingMemberLink = await _dbContext.ChatMemberLinks
+        var requestingMemberLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == requestingMemberId);
 
         if (requestingMemberLink == null)
@@ -121,7 +121,7 @@ public class ChatParticipantsService : IChatParticipantsService
         }
 
         // Find the participant to update
-        var participantLink = await _dbContext.ChatMemberLinks
+        var participantLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == participantMemberId);
 
         if (participantLink == null)
@@ -142,7 +142,7 @@ public class ChatParticipantsService : IChatParticipantsService
     public async Task RemoveParticipantAsync(long requestingMemberId, long chatId, long participantMemberId)
     {
         // Check if requesting member is owner of the chat
-        var requestingMemberLink = await _dbContext.ChatMemberLinks
+        var requestingMemberLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == requestingMemberId);
 
         if (requestingMemberLink == null)
@@ -156,7 +156,7 @@ public class ChatParticipantsService : IChatParticipantsService
         }
 
         // Find the participant to remove
-        var participantLink = await _dbContext.ChatMemberLinks
+        var participantLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == participantMemberId);
 
         if (participantLink == null)
@@ -170,7 +170,7 @@ public class ChatParticipantsService : IChatParticipantsService
             throw new InvalidOperationException("Cannot remove yourself from the chat. Use leave chat instead.");
         }
 
-        _dbContext.ChatMemberLinks.Remove(participantLink);
+        _dbContext.ChatMemberships.Remove(participantLink);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -196,7 +196,7 @@ public class ChatParticipantsService : IChatParticipantsService
         }
 
         // Check if member is already in the chat
-        var existingLink = await _dbContext.ChatMemberLinks
+        var existingLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
         if (existingLink != null)
@@ -204,7 +204,7 @@ public class ChatParticipantsService : IChatParticipantsService
             throw new InvalidOperationException("Member is already a participant in this chat");
         }
 
-        var newParticipantLink = new ChatMemberLink
+        var newParticipantLink = new ChatMembership
         {
             ChatId = chatId,
             MemberId = memberId,
@@ -212,14 +212,14 @@ public class ChatParticipantsService : IChatParticipantsService
             JoinedAt = DateTime.UtcNow
         };
 
-        _dbContext.ChatMemberLinks.Add(newParticipantLink);
+        _dbContext.ChatMemberships.Add(newParticipantLink);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task LeaveChatAsync(long memberId, long chatId)
     {
         // Find the participant link
-        var participantLink = await _dbContext.ChatMemberLinks
+        var participantLink = await _dbContext.ChatMemberships
             .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
 
         if (participantLink == null)
@@ -230,7 +230,7 @@ public class ChatParticipantsService : IChatParticipantsService
         // Check if this is the owner and if there are other participants
         if (participantLink.RoleInChat == ChatRole.Owner)
         {
-            var otherParticipants = await _dbContext.ChatMemberLinks
+            var otherParticipants = await _dbContext.ChatMemberships
                 .Where(cml => cml.ChatId == chatId && cml.MemberId != memberId)
                 .ToListAsync();
 
@@ -240,7 +240,7 @@ public class ChatParticipantsService : IChatParticipantsService
             }
         }
 
-        _dbContext.ChatMemberLinks.Remove(participantLink);
+        _dbContext.ChatMemberships.Remove(participantLink);
         await _dbContext.SaveChangesAsync();
     }
 }
