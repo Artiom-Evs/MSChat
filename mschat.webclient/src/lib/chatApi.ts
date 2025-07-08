@@ -124,12 +124,12 @@ class ChatApiService {
   // Messages management
   getMessages = (
     chatId: number,
-    page: number = 1,
-    pageSize: number = 50
+    limit: number = 50,
+    offset?: number
   ): Promise<MessageDto[]> =>
     this.instance
       .get<MessageDto[]>(`v1/chats/${chatId}/messages`, {
-        params: { page, pageSize },
+        params: { limit, offset },
       })
       .then((response) => response.data);
 

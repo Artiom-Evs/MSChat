@@ -2,25 +2,27 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { chatApi } from "../lib/chatApi";
 import type { CreateMessageDto, UpdateMessageDto } from "../types";
 
-export const useMessages = (chatId: number, page: number = 1, pageSize: number = 50) => {
+export const useMessages = (chatId: number, limit: number = 50, offset?: number) => {
   return useQuery({
-    queryKey: ["messages", chatId, page, pageSize],
-    queryFn: () => chatApi.getMessages(chatId, page, pageSize),
+    queryKey: ["messages", chatId, limit, offset],
+    queryFn: () => chatApi.getMessages(chatId, limit, offset),
     enabled: !!chatId,
   });
 };
 
-export const useInfiniteMessages = (chatId: number, pageSize: number = 50) => {
+export const useInfiniteMessages = (chatId: number, limit: number = 50) => {
   return useInfiniteQuery({
     queryKey: ["messages", chatId, "infinite"],
-    queryFn: ({ pageParam = 1 }) => chatApi.getMessages(chatId, pageParam, pageSize),
-    initialPageParam: 1,
+    queryFn: ({ pageParam = 0 }) => chatApi.getMessages(chatId, limit, pageParam || undefined),
+    initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      // If the last page has fewer items than pageSize, we've reached the end
-      if (lastPage.length < pageSize) {
+      // If the last page has fewer items than limit, we've reached the end
+      if (lastPage.length < limit) {
         return undefined;
       }
-      return allPages.length + 1;
+      // Calculate offset for next page: total items fetched so far
+      const totalItemsFetched = allPages.reduce((sum, page) => sum + page.length, 0);
+      return totalItemsFetched;
     },
     enabled: !!chatId,
   });
@@ -134,5 +136,5 @@ export const useMessageCount = (chatId: number) => {
   const queryClient = useQueryClient();
   
   return queryClient.getQueryData(["messages", chatId, "infinite"]) || 
-         queryClient.getQueryData(["messages", chatId, 1, 50]);
+         queryClient.getQueryData(["messages", chatId, 50, undefined]);
 };
