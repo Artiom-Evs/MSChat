@@ -12,7 +12,6 @@ public class ApplicationDbContext : DbContext
     public ApplicationDbContext (DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
-        this.Database.Migrate();
     }
 
     public DbSet<MSChat.Chat.Models.Chat> Chat { get; set; } = default!;
