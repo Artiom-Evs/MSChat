@@ -78,6 +78,7 @@ export const useJoinChat = () => {
     onSuccess: (_, chatId) => {
       queryClient.invalidateQueries({ queryKey: ["participants", chatId] });
       queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
     },
   });
 };
@@ -90,6 +91,7 @@ export const useLeaveChat = () => {
     onSuccess: (_, chatId) => {
       queryClient.invalidateQueries({ queryKey: ["participants", chatId] });
       queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
     },
   });
 };
