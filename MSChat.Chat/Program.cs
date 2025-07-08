@@ -8,15 +8,10 @@ using MSChat.Chat.Handlers;
 using MSChat.Chat.Hubs;
 using MSChat.Chat.Requirements;
 using MSChat.Chat.Services;
+using StackExchange.Redis;
 using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var connectionString = builder.Configuration.GetConnectionString("ChatDBConnection")
-    ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
 
 // get validated API authentication settings
 var authSettings = builder.Configuration
@@ -31,6 +26,22 @@ var corsSettings = builder.Configuration
     .Get<CorsSettings>()!;
 var corsSettingsValidationContext = new ValidationContext(corsSettings);
 Validator.ValidateObject(corsSettings!, corsSettingsValidationContext, validateAllProperties: true);
+
+// get validated Redis settings
+var redisSettings = builder.Configuration
+    .GetRequiredSection(RedisSettings.Position)
+    .Get<RedisSettings>()!;
+var redisSettingsValidationContext = new ValidationContext(redisSettings);
+Validator.ValidateObject(redisSettings!, redisSettingsValidationContext, validateAllProperties: true);
+
+var connectionString = builder.Configuration.GetConnectionString("ChatDBConnection")
+    ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
 
 builder.Services.
     AddAuthentication(options =>

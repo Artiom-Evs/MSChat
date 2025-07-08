@@ -10,6 +10,13 @@ services:
     volumes:
       - mssql_data:/var/opt/mssql
 
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+      - "9002:8001"
+  
   auth:
     build:
       context: .
@@ -51,6 +58,7 @@ services:
       - ApiAuth__Authority=http://auth:8080
       - ApiAuth__ValidIssuer=http://localhost:5000/
       - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
+      - Redis__ConnectionString=redis:6379
       
 volumes:
   mssql_data:
