@@ -44,7 +44,7 @@ services:
   chatapi:
     build:
       context: .
-      dockerfile: ./MSChat.Chat/Dockerfile
+      dockerfile: ./MSChat.ChatAPI/Dockerfile
     container_name: chatapi
     ports:
       - "5004:8080"
