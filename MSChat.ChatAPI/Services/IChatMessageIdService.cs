@@ -1,4 +1,4 @@
-﻿namespace MSChat.Chat.Services;
+﻿namespace MSChat.ChatAPI.Services;
 
 
 public interface IChatMessageIdService

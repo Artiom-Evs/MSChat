@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using MSChat.Chat;
-using MSChat.Chat.Configurations;
-using MSChat.Chat.Data;
-using MSChat.Chat.Handlers;
-using MSChat.Chat.Hubs;
-using MSChat.Chat.Requirements;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI;
+using MSChat.ChatAPI.Configurations;
+using MSChat.ChatAPI.Data;
+using MSChat.ChatAPI.Handlers;
+using MSChat.ChatAPI.Hubs;
+using MSChat.ChatAPI.Requirements;
+using MSChat.ChatAPI.Services;
 using StackExchange.Redis;
 using System.ComponentModel.DataAnnotations;
 

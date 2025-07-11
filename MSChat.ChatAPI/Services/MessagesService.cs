@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using MSChat.Chat.Data;
-using MSChat.Chat.Models;
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Data;
+using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Services;
+namespace MSChat.ChatAPI.Services;
 
 public class MessagesService : IMessagesService
 {

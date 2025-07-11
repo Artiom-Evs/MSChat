@@ -1,4 +1,4 @@
-namespace MSChat.Chat.Models.DTOs;
+namespace MSChat.ChatAPI.Models.DTOs;
 
 public class MemberDto
 {

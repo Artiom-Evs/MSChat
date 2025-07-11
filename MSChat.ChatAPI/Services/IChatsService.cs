@@ -1,6 +1,6 @@
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Services;
+namespace MSChat.ChatAPI.Services;
 
 public interface IChatsService
 {

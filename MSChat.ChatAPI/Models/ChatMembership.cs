@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace MSChat.Chat.Models;
+namespace MSChat.ChatAPI.Models;
 
 public class ChatMembership
 {

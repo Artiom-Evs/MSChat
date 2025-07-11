@@ -1,4 +1,4 @@
-namespace MSChat.Chat.Models;
+namespace MSChat.ChatAPI.Models;
 
 public class ChatMember
 {

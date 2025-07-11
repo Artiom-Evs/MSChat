@@ -1,8 +1,8 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
-using MSChat.Chat.Data;
+using MSChat.ChatAPI.Data;
 
-namespace MSChat.Chat.Services;
+namespace MSChat.ChatAPI.Services;
 
 public class DatabaseMigrationService : IHostedService
 {

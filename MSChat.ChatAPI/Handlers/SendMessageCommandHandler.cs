@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using MSChat.Chat.Commands;
-using MSChat.Chat.Hubs;
-using MSChat.Chat.Models.DTOs;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI.Commands;
+using MSChat.ChatAPI.Hubs;
+using MSChat.ChatAPI.Models.DTOs;
+using MSChat.ChatAPI.Services;
 
-namespace MSChat.Chat.Handlers;
+namespace MSChat.ChatAPI.Handlers;
 
 public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, MessageDto>
 {

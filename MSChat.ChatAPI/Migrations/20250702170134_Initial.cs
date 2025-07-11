@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MSChat.Chat.Migrations
+namespace MSChat.ChatAPI.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

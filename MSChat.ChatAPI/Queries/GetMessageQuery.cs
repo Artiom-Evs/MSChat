@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Queries;
+namespace MSChat.ChatAPI.Queries;
 
 public record GetMessageQuery(long MemberId, long ChatId, long MessageIdInChat): IRequest<MessageDto?>;

@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Commands;
+namespace MSChat.ChatAPI.Commands;
 
 public record SendMessageCommand(long MemberId, long ChatId, CreateMessageDto NewMessage) : IRequest<MessageDto>;

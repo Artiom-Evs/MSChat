@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-using MSChat.Chat.Commands;
-using MSChat.Chat.Data;
-using MSChat.Chat.Models;
-using MSChat.Chat.Models.DTOs;
-using MSChat.Chat.Queries;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI.Commands;
+using MSChat.ChatAPI.Data;
+using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Models.DTOs;
+using MSChat.ChatAPI.Queries;
+using MSChat.ChatAPI.Services;
 
-namespace MSChat.Chat.Controllers;
+namespace MSChat.ChatAPI.Controllers;
 
 [Authorize]
 [ApiController]

@@ -1,6 +1,6 @@
 using MediatR;
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Commands;
+namespace MSChat.ChatAPI.Commands;
 
 public record UpdateMessageCommand(long MemberId, long ChatId, long MessageIdInChat, UpdateMessageDto UpdateMessage) : IRequest;

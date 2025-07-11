@@ -8,12 +8,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MSChat.Chat.Data;
-using MSChat.Chat.Models;
-using MSChat.Chat.Models.DTOs;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI.Data;
+using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Models.DTOs;
+using MSChat.ChatAPI.Services;
 
-namespace MSChat.Chat.Controllers;
+namespace MSChat.ChatAPI.Controllers;
 
 [Authorize]
 [ApiController]

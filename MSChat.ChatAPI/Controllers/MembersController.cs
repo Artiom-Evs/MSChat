@@ -2,10 +2,10 @@ using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MSChat.Chat.Models.DTOs;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI.Models.DTOs;
+using MSChat.ChatAPI.Services;
 
-namespace MSChat.Chat.Controllers;
+namespace MSChat.ChatAPI.Controllers;
 
 [Authorize]
 [ApiController]

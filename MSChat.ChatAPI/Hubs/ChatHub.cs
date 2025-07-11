@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using MSChat.Chat.Models;
-using MSChat.Chat.Models.DTOs;
+using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Models.DTOs;
 
-namespace MSChat.Chat.Hubs;
+namespace MSChat.ChatAPI.Hubs;
 
 public interface IChatHubClient
 {

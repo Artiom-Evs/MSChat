@@ -1,4 +1,4 @@
-﻿namespace MSChat.Chat;
+﻿namespace MSChat.ChatAPI;
 
 public static class AppConstants
 {

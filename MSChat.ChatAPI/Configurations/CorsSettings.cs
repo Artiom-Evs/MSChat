@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MSChat.Chat.Configurations;
+namespace MSChat.ChatAPI.Configurations;
 
 public class CorsSettings
 {

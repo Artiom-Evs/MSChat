@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MSChat.Chat.Data;
+using MSChat.ChatAPI.Data;
 using StackExchange.Redis;
 using System.Threading;
 
-namespace MSChat.Chat.Services;
+namespace MSChat.ChatAPI.Services;
 
 public class ChatMessageIdService : IChatMessageIdService
 {

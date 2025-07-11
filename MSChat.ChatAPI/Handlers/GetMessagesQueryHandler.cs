@@ -1,9 +1,9 @@
 using MediatR;
-using MSChat.Chat.Models.DTOs;
-using MSChat.Chat.Queries;
-using MSChat.Chat.Services;
+using MSChat.ChatAPI.Models.DTOs;
+using MSChat.ChatAPI.Queries;
+using MSChat.ChatAPI.Services;
 
-namespace MSChat.Chat.Handlers;
+namespace MSChat.ChatAPI.Handlers;
 
 public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, IEnumerable<MessageDto>>
 {

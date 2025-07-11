@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using MSChat.Chat.Requirements;
+using MSChat.ChatAPI.Requirements;
 using System.Security.Claims;
 
-namespace MSChat.Chat.Handlers;
+namespace MSChat.ChatAPI.Handlers;
 
 public class ScopeHandler : AuthorizationHandler<ScopeRequirement>
 {
