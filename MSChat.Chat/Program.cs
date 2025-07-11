@@ -96,7 +96,7 @@ builder.Services.AddScoped<IChatsService, ChatsService>();
 builder.Services.AddScoped<IMembersService, MembersService>();
 builder.Services.AddScoped<IChatParticipantsService, ChatParticipantsService>();
 builder.Services.AddScoped<IMessagesService, MessagesService>();
-builder.Services.AddScoped<IChatMessageIdGenerator, ChatMessageIdGenerator>();
+builder.Services.AddScoped<IChatMessageIdService, ChatMessageIdService>();
 
 var app = builder.Build();
 

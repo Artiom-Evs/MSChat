@@ -8,13 +8,13 @@ namespace MSChat.Chat.Services;
 public class MessagesService : IMessagesService
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly IChatMessageIdGenerator _idGenerator;
+    private readonly IChatMessageIdService _chatIdService;
     private readonly ILogger<MessagesService> _logger;
 
-    public MessagesService(ApplicationDbContext dbContext, IChatMessageIdGenerator idGenerator, ILogger<MessagesService> logger)
+    public MessagesService(ApplicationDbContext dbContext, IChatMessageIdService idGenerator, ILogger<MessagesService> logger)
     {
         _dbContext = dbContext;
-        _idGenerator = idGenerator;
+        _chatIdService = idGenerator;
         _logger = logger;
     }
 
@@ -153,7 +153,7 @@ public class MessagesService : IMessagesService
             throw new KeyNotFoundException("Chat not found or has been deleted");
         }
 
-        long idInChat = await _idGenerator.GetNextIdInChatAsync(chatId);
+        long idInChat = await _chatIdService.GetNextIdInChatAsync(chatId);
 
         var message = new Message
         {

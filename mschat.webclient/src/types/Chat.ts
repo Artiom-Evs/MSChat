@@ -17,6 +17,7 @@ export interface ChatDto {
   isInChat: boolean;
   participants: ChatParticipantDto[];
   lastMessage?: MessageDto;
+  unreadMessagesCount: number;
   createdAt: string;
   deletedAt?: string;
 }

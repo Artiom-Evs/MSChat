@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Box,
   ListItem,
   ListItemButton,
@@ -14,6 +15,7 @@ interface Chat {
   name: string;
   type: ChatType;
   participants: ChatParticipantDto[];
+  unreadMessagesCount: number;
   lastMessage?: MessageDto;
 }
 
@@ -85,18 +87,36 @@ const ChatListItem: React.FC<ChatListItemProps> = ({ chat, isSelected, onSelect 
             >
               {title}
             </Typography>
-            {lastMessageTime && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color: isSelected ? 'rgba(255,255,255,0.7)' : 'text.secondary',
-                  fontSize: '0.75rem',
-                  flexShrink: 0,
-                }}
-              >
-                {lastMessageTime}
-              </Typography>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {chat.unreadMessagesCount > 0 && (
+                <Badge
+                  badgeContent={chat.unreadMessagesCount}
+                  color="primary"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      backgroundColor: isSelected ? 'rgba(255,255,255,0.9)' : 'primary.main',
+                      color: isSelected ? 'primary.main' : 'primary.contrastText',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      minWidth: '18px',
+                      height: '18px',
+                    },
+                  }}
+                />
+              )}
+              {lastMessageTime && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: isSelected ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                    fontSize: '0.75rem',
+                    flexShrink: 0,
+                  }}
+                >
+                  {lastMessageTime}
+                </Typography>
+              )}
+            </Box>
           </Box>
           <Typography
             variant="body2"

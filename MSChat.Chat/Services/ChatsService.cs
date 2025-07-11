@@ -8,11 +8,13 @@ namespace MSChat.Chat.Services;
 public class ChatsService : IChatsService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IChatMessageIdService _chatIdService;
     private readonly ILogger<ChatsService> _logger;
 
-    public ChatsService(ApplicationDbContext dbContext, ILogger<ChatsService> logger)
+    public ChatsService(ApplicationDbContext dbContext, IChatMessageIdService chatIdService, ILogger<ChatsService> logger)
     {
         _dbContext = dbContext;
+        _chatIdService = chatIdService;
         _logger = logger;
     }
 
@@ -68,6 +70,22 @@ public class ChatsService : IChatsService
                     .FirstOrDefault()
             })
             .ToListAsync();
+
+        var chatMemberships = await _dbContext.ChatMemberships
+            .Include(m => m.Chat)
+            .Where(m => m.MemberId == memberId)
+            .ToListAsync();
+
+        foreach (var chat in chats)
+        {
+            var chatMembership = chatMemberships.FirstOrDefault(cm => cm.ChatId == chat.Id);
+
+            if (chatMembership != null)
+            {
+                var lastIdInChat = await _chatIdService.GetLastIdInChatAsync(chat.Id);
+                chat.UnreadMessagesCount = (int)(lastIdInChat - chatMembership.LastReadedMessageId);
+            }
+        }
 
         return chats;
     }
