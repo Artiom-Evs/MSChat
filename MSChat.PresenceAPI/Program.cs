@@ -3,13 +3,17 @@ using Microsoft.AspNetCore.Authorization;
 using MSChat.PresenceAPI;
 using MSChat.Shared.Auth.Requirements;
 using MSChat.Shared.Configuration.Extensions;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // get validated app settings
 var authSettings = builder.Configuration.GetAuthSettings();
 var corsSettings = builder.Configuration.GetCorsSettings();
+var redisSettings = builder.Configuration.GetRedisSettings();
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
 
 builder.Services.
     AddAuthentication(options =>
