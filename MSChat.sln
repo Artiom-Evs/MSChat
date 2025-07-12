@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSChat.ChatAPI", "MSChat.Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSChat.Shared", "MSChat.Shared\MSChat.Shared.csproj", "{1664854A-7E68-482F-8DBE-662D05DFDEC5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSChat.PresenceAPI", "MSChat.PresenceAPI\MSChat.PresenceAPI.csproj", "{11C02D6A-5744-467A-9F0F-9B2DAA346996}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11C02D6A-5744-467A-9F0F-9B2DAA346996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11C02D6A-5744-467A-9F0F-9B2DAA346996}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11C02D6A-5744-467A-9F0F-9B2DAA346996}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11C02D6A-5744-467A-9F0F-9B2DAA346996}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
