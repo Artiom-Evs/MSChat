@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using MSChat.PresenceAPI;
+using MSChat.PresenceAPI.Hubs;
+using MSChat.PresenceAPI.Services;
+using MSChat.Shared.Auth.Handlers;
 using MSChat.Shared.Auth.Requirements;
 using MSChat.Shared.Configuration.Extensions;
 using StackExchange.Redis;
@@ -57,6 +60,10 @@ builder.Services.AddCors(options =>
     }); ;
 });
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
+builder.Services.AddScoped<IUserPresenceService, UserPresenceService>();
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -66,5 +73,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Hello World!");
+app.MapHub<PresenceHub>("/_hubs/presence");
 
 app.Run();
