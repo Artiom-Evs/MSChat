@@ -2,7 +2,7 @@
 
 namespace MSChat.ChatAPI.Configurations;
 
-public class CorsSettings
+public class ApiCorsSettings
 {
     public const string Position = "Cors";
 

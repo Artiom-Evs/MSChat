@@ -28,4 +28,8 @@
     <ProjectReference Include="..\MSChat.Shared\MSChat.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
+
 </Project>

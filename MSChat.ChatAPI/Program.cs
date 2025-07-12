@@ -2,37 +2,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI;
-using MSChat.ChatAPI.Configurations;
 using MSChat.ChatAPI.Data;
 using MSChat.ChatAPI.Hubs;
 using MSChat.ChatAPI.Services;
 using MSChat.Shared.Auth.Handlers;
 using MSChat.Shared.Auth.Requirements;
+using MSChat.Shared.Configuration.Extensions;
 using StackExchange.Redis;
-using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// get validated API authentication settings
-var authSettings = builder.Configuration
-    .GetRequiredSection(ApiAuthSettings.Position)
-    .Get<ApiAuthSettings>()!;
-var authSettingsValidationContext = new ValidationContext(authSettings);
-Validator.ValidateObject(authSettings!, authSettingsValidationContext, validateAllProperties: true);
-
-// get validated API CORS settings
-var corsSettings = builder.Configuration
-    .GetRequiredSection(CorsSettings.Position)
-    .Get<CorsSettings>()!;
-var corsSettingsValidationContext = new ValidationContext(corsSettings);
-Validator.ValidateObject(corsSettings!, corsSettingsValidationContext, validateAllProperties: true);
-
-// get validated Redis settings
-var redisSettings = builder.Configuration
-    .GetRequiredSection(RedisSettings.Position)
-    .Get<RedisSettings>()!;
-var redisSettingsValidationContext = new ValidationContext(redisSettings);
-Validator.ValidateObject(redisSettings!, redisSettingsValidationContext, validateAllProperties: true);
+// get validated app settings
+var authSettings = builder.Configuration.GetAuthSettings();
+var corsSettings = builder.Configuration.GetCorsSettings();
+var redisSettings = builder.Configuration.GetRedisSettings();
 
 var connectionString = builder.Configuration.GetConnectionString("ChatDBConnection")
     ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.");
