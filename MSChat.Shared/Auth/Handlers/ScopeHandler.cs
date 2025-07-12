@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using MSChat.ChatAPI.Requirements;
-using System.Security.Claims;
+using MSChat.Shared.Auth.Requirements;
 
-namespace MSChat.ChatAPI.Handlers;
+namespace MSChat.Shared.Auth.Handlers;
 
 public class ScopeHandler : AuthorizationHandler<ScopeRequirement>
 {
@@ -10,7 +9,9 @@ public class ScopeHandler : AuthorizationHandler<ScopeRequirement>
         AuthorizationHandlerContext context,
         ScopeRequirement requirement)
     {
-        var scopes = context.User.FindFirstValue("scope")?.Split(" ") ?? [];
+        var scopes = context.User.FindFirst("scope")
+            ?.Value
+            ?.Split(" ") ?? [];
 
         if (scopes.Contains(requirement.Scope))
         {

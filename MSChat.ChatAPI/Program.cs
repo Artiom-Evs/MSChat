@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI;
 using MSChat.ChatAPI.Configurations;
 using MSChat.ChatAPI.Data;
-using MSChat.ChatAPI.Handlers;
 using MSChat.ChatAPI.Hubs;
-using MSChat.ChatAPI.Requirements;
 using MSChat.ChatAPI.Services;
+using MSChat.Shared.Auth.Handlers;
+using MSChat.Shared.Auth.Requirements;
 using StackExchange.Redis;
 using System.ComponentModel.DataAnnotations;
 

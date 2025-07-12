@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace MSChat.ChatAPI.Requirements;
+namespace MSChat.Shared.Auth.Requirements;
 
 public class ScopeRequirement : IAuthorizationRequirement
 {
