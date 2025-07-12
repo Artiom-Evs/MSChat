@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSChat.ChatAPI", "MSChat.ChatAPI\MSChat.ChatAPI.csproj", "{E2AEB930-2A7A-4352-B620-DCE6ADF3C1F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MSChat.Shared", "MSChat.Shared\MSChat.Shared.csproj", "{1664854A-7E68-482F-8DBE-662D05DFDEC5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{E2AEB930-2A7A-4352-B620-DCE6ADF3C1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2AEB930-2A7A-4352-B620-DCE6ADF3C1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2AEB930-2A7A-4352-B620-DCE6ADF3C1F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1664854A-7E68-482F-8DBE-662D05DFDEC5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
