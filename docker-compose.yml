@@ -59,6 +59,22 @@ services:
       - ApiAuth__ValidIssuer=http://localhost:5000/
       - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
       - Redis__ConnectionString=redis:6379
-      
+
+  presenceapi:
+    build:
+      context: .
+      dockerfile: ./MSChat.PresenceAPI/Dockerfile
+    container_name: chatapi
+    ports:
+      - "5006:8080"
+      - "5007:8081"
+    depends_on:
+      - auth
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiAuth__Authority=http://auth:8080
+      - ApiAuth__ValidIssuer=http://localhost:5000/
+      - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
+
 volumes:
   mssql_data:
