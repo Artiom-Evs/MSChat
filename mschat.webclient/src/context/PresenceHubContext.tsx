@@ -2,24 +2,24 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { HubConnectionBuilder, HubConnection, LogLevel } from "@microsoft/signalr";
 import { useAuth } from "react-oidc-context";
 
-type ChatHubContextType = {
+type PresenceHubContextType = {
   connection: HubConnection | null;
   isConnected: boolean;
 };
 
-const ChatHubContext = createContext<ChatHubContextType>({
+const PresenceHubContext = createContext<PresenceHubContextType>({
   connection: null,
   isConnected: false,
 });
 
-export const useChatHub = () => useContext(ChatHubContext);
+export const usePresenceHub = () => useContext(PresenceHubContext);
 
-type ChatHubProps = {
+type PresenceHubProps = {
   children: React.ReactNode;
   hubUrl: string;
 };
 
-export const ChatHubProvider: React.FC<ChatHubProps> = ({ children, hubUrl }) => {
+export const PresenceHubProvider: React.FC<PresenceHubProps> = ({ children, hubUrl }) => {
   const connectionRef = useRef<HubConnection | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const auth = useAuth();
@@ -45,7 +45,7 @@ export const ChatHubProvider: React.FC<ChatHubProps> = ({ children, hubUrl }) =>
       try {
         await connection.start();
         setIsConnected(true);
-        console.log("Connected to ChatAPI SignalR hub.");
+        console.log("Connected to PresenceAPI SignalR hub.");
       } catch (err) {
         console.error("SignalR connection failed:", err);
         setIsConnected(false);
@@ -56,14 +56,14 @@ export const ChatHubProvider: React.FC<ChatHubProps> = ({ children, hubUrl }) =>
   }, [auth.isAuthenticated, connectionRef.current]);
 
   return (
-    <ChatHubContext.Provider
+    <PresenceHubContext.Provider
       value={{
         connection: connectionRef.current,
         isConnected,
       }}
     >
       {children}
-    </ChatHubContext.Provider>
+    </PresenceHubContext.Provider>
   );
 };
 
