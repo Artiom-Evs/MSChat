@@ -2,6 +2,7 @@ class ServerSideConfig {
   private _oidcServerUri: string = "";
   private _oidcClientId: string = "";
   private _chatApiUri: string = "";
+  private _presenceApiUri: string = "";
 
   get oidcServerUri() {
     if (!this._oidcServerUri) {
@@ -27,6 +28,14 @@ class ServerSideConfig {
     return this._chatApiUri;
   }
 
+  get presenceApiUri() {
+    if (!this._presenceApiUri) {
+      throw new Error(`"presenceApiUri" is not configured.`);
+    }
+
+    return this._presenceApiUri;
+  }
+
   public async init(): Promise<void> {
     try {
       // get server-side app configuration
@@ -36,11 +45,13 @@ class ServerSideConfig {
       this._oidcServerUri = data.oidcServerUri;
       this._oidcClientId = data.oidcClientId;
       this._chatApiUri = data.chatApiUri;
+      this._presenceApiUri = data.presenceApiUri;
 
       // validate configuration
       this.oidcServerUri;
       this.oidcClientId;
       this.chatApiUri;
+      this.presenceApiUri;
     } catch (e: any) {
       console.error("Error while load app configuration:", e);
     }

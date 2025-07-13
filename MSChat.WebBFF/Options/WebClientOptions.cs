@@ -12,4 +12,6 @@ public class WebClientOptions
     public string OidcClientId { get; init; } = "";
     [Required]
     public string ChatApiUri { get; init; } = "";
+    [Required]
+    public string PresenceApiUri { get; init; } = "";
 }
