@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using MSChat.PresenceAPI.Services;
 
 namespace MSChat.PresenceAPI.Hubs;
@@ -8,6 +9,7 @@ public interface IPresenceHubClient
     Task PresenceStatusChanged(string userId, string newStatus);
 }
 
+[Authorize]
 public class PresenceHub : Hub<IPresenceHubClient>
 {
     private readonly IUserPresenceService _presenceService;
