@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Paper, IconButton, CircularProgress, Chip } from '@mui/material';
+import { Box, Typography, Paper, IconButton, CircularProgress, Chip, Badge } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat, useDeleteChat } from '../hooks/useChats';
@@ -10,6 +10,7 @@ import { ChatType, type MessageDto } from '../types';
 import { useCurrentMember } from '../hooks/useMembers';
 import { useChatHub } from '../context';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserStatus } from '../hooks/useUserStatus';
 
 const PersonalChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -218,6 +219,11 @@ const PersonalChatPage: React.FC = () => {
   // Get the other participant's name as chat title
   const otherParticipant = selectedChat.participants?.find(p => me && p.memberId !== me.id);
   const chatTitle = otherParticipant?.memberName || selectedChat.name;
+  
+  // Track the other participant's status
+  const { status: otherParticipantStatus } = useUserStatus({
+    userId: otherParticipant?.memberId?.toString() || ''
+  });
 
   // In personal chats, user is always in the chat (by definition)
   const isUserInChat = selectedChat.participants?.some(p => p.memberId === me?.id) || false;
@@ -244,11 +250,25 @@ const PersonalChatPage: React.FC = () => {
               color="secondary"
             />
             {otherParticipant && (
-              <Typography variant="body2" color="text.secondary">
-                Direct message with {otherParticipant.memberName}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {otherParticipantStatus && (
+                  <Badge
+                    color={otherParticipantStatus === 'Online' ? 'success' : 'default'}
+                    variant="dot"
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        backgroundColor: otherParticipantStatus === 'Online' ? '#4caf50' : '#9e9e9e',
+                      }
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      {otherParticipantStatus}
+                    </Typography>
+                  </Badge>
+                )}
+              </Box>
             )}
-          </Box>
+                  </Box>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <IconButton
               onClick={() => navigate(`/chats/${selectedChat.id}/edit`)}

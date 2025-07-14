@@ -23,7 +23,7 @@ export function useUserStatus(props: UseUserStatusProps) {
 
     // Subscribe to user status updates
     conn
-      .invoke("SubscribeToUser", props.userId)
+      .invoke("SubscribeToUserStatus", props.userId)
       .then(() => {
         console.log("PresenceHub: Successfully subscribed.");
       })
@@ -62,7 +62,7 @@ export function useUserStatus(props: UseUserStatusProps) {
 
     hub.connection
       .invoke<string>("GetUserStatus", props.userId)
-      .then(() => setStatus)
+      .then(setStatus)
       .catch((err) => {
         console.error("PresenceHub: User status update failed.", err);
       });
