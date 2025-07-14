@@ -138,7 +138,7 @@ public class ChatsService : IChatsService
 
     private async Task<ChatDto> CreatePersonalChatAsync(string userId, CreateChatDto createChatDto)
     {
-        if (!createChatDto.OtherMemberId.HasValue)
+        if (string.IsNullOrEmpty(createChatDto.OtherMemberId))
         {
             throw new ArgumentException("OtherMemberId is required for personal chats", nameof(createChatDto.OtherMemberId));
         }
@@ -149,7 +149,7 @@ public class ChatsService : IChatsService
             throw new ArgumentException("Member not found", nameof(userId));
         }
 
-        var otherMember = await _dbContext.Members.FindAsync(createChatDto.OtherMemberId.Value);
+        var otherMember = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == createChatDto.OtherMemberId);
         if (otherMember == null)
         {
             throw new ArgumentException("Other member not found", nameof(createChatDto.OtherMemberId));
@@ -160,7 +160,7 @@ public class ChatsService : IChatsService
             .Where(c => c.Type == ChatType.Personal && 
                        c.Members.Count == 2 &&
                        c.Members.Any(m => m.Member.UserId == userId) &&
-                       c.Members.Any(m => m.MemberId == createChatDto.OtherMemberId.Value))
+                       c.Members.Any(m => m.Member.UserId == createChatDto.OtherMemberId))
             .FirstOrDefaultAsync();
 
         // If an existing chat is found, return it with participants
@@ -212,7 +212,7 @@ public class ChatsService : IChatsService
         _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
-            MemberId = createChatDto.OtherMemberId.Value,
+            MemberId = otherMember.Id,
             RoleInChat = ChatRole.Owner,
             JoinedAt = DateTime.UtcNow
         });

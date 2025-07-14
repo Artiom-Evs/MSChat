@@ -123,7 +123,7 @@ public class ChatsController : ControllerBase
         }
 
         // Additional validation for personal chats
-        if (createChatDto.Type == ChatType.Personal && !createChatDto.OtherMemberId.HasValue)
+        if (createChatDto.Type == ChatType.Personal && string.IsNullOrEmpty(createChatDto.OtherMemberId))
         {
             ModelState.AddModelError(nameof(createChatDto.OtherMemberId), "OtherMemberId is required for personal chats");
             return BadRequest(ModelState);
