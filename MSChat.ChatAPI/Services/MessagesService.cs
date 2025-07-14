@@ -18,11 +18,11 @@ public class MessagesService : IMessagesService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<MessageDto>> GetMessagesAsync(long memberId, long chatId, int limit, long? offset)
+    public async Task<IEnumerable<MessageDto>> GetMessagesAsync(string userId, long chatId, int limit, long? offset)
     {
         // Verify user is a member of the chat
         var chatMembership = await _dbContext.ChatMemberships
-            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.Member.UserId == userId);
 
         if (chatMembership == null)
         {
@@ -62,7 +62,7 @@ public class MessagesService : IMessagesService
                     {
                         Id = m.IdInChat,
                         ChatId = m.ChatId,
-                        SenderId = m.SenderId,
+                        SenderId = member.UserId,
                         SenderName = member.Name,
                         SenderPhotoUrl = member.PhotoUrl,
                         Text = m.Text,
@@ -82,11 +82,11 @@ public class MessagesService : IMessagesService
         return messages.OrderBy(m => m.CreatedAt);
     }
 
-    public async Task<MessageDto?> GetMessageByIdAsync(long memberId, long chatId, long messageIdInChat)
+    public async Task<MessageDto?> GetMessageByIdAsync(string userId, long chatId, long messageIdInChat)
     {
         // Verify user is a member of the chat
         var chatMembership = await _dbContext.ChatMemberships
-            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.Member.UserId == userId);
 
         if (chatMembership == null)
         {
@@ -123,7 +123,7 @@ public class MessagesService : IMessagesService
         {
             Id = message.Message.IdInChat,
             ChatId = message.Message.ChatId,
-            SenderId = message.Message.SenderId,
+            SenderId = message.Member.UserId,
             SenderName = message.Member.Name,
             SenderPhotoUrl = message.Member.PhotoUrl,
             Text = message.Message.Text,
@@ -133,11 +133,11 @@ public class MessagesService : IMessagesService
         };
     }
 
-    public async Task<MessageDto> CreateMessageAsync(long memberId, long chatId, CreateMessageDto createMessageDto)
+    public async Task<MessageDto> CreateMessageAsync(string userId, long chatId, CreateMessageDto createMessageDto)
     {
         // Verify user is a member of the chat
         var isMember = await _dbContext.ChatMemberships
-            .AnyAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+            .AnyAsync(cml => cml.ChatId == chatId && cml.Member.UserId == userId);
 
         if (!isMember)
         {
@@ -153,13 +153,20 @@ public class MessagesService : IMessagesService
             throw new KeyNotFoundException("Chat not found or has been deleted");
         }
 
+        // Get the member by userId
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (member == null)
+        {
+            throw new ArgumentException("Member not found", nameof(userId));
+        }
+
         long idInChat = await _chatIdService.GetNextIdInChatAsync(chatId);
 
         var message = new Message
         {
             IdInChat = idInChat,
             ChatId = chatId,
-            SenderId = memberId,
+            SenderId = member.Id,
             Text = createMessageDto.Text,
             CreatedAt = DateTime.UtcNow,
         };
@@ -168,12 +175,11 @@ public class MessagesService : IMessagesService
         await _dbContext.SaveChangesAsync();
 
         // Return the created message with sender information
-        var member = await _dbContext.Members.FindAsync(memberId);
         return new MessageDto
         {
             Id = message.IdInChat,
             ChatId = message.ChatId,
-            SenderId = message.SenderId,
+            SenderId = member?.UserId ?? "unknown",
             SenderName = member?.Name ?? "Unknown",
             SenderPhotoUrl = member?.PhotoUrl,
             Text = message.Text,
@@ -183,7 +189,7 @@ public class MessagesService : IMessagesService
         };
     }
 
-    public async Task UpdateMessageAsync(long memberId, long chatId, long messageIdInChat, UpdateMessageDto updateMessageDto)
+    public async Task UpdateMessageAsync(string userId, long chatId, long messageIdInChat, UpdateMessageDto updateMessageDto)
     {
         var message = await _dbContext.Messages
             .FirstOrDefaultAsync(m => m.ChatId == chatId && m.IdInChat == messageIdInChat);
@@ -193,8 +199,15 @@ public class MessagesService : IMessagesService
             throw new KeyNotFoundException("Message not found");
         }
 
+        // Get the member by userId to check ownership
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (member == null)
+        {
+            throw new ArgumentException("Member not found", nameof(userId));
+        }
+
         // Only the sender can update their own message
-        if (message.SenderId != memberId)
+        if (message.SenderId != member.Id)
         {
             throw new UnauthorizedAccessException("You can only update your own messages");
         }
@@ -225,7 +238,7 @@ public class MessagesService : IMessagesService
         }
     }
 
-    public async Task DeleteMessageAsync(long memberId, long chatId, long messageIdInChat)
+    public async Task DeleteMessageAsync(string userId, long chatId, long messageIdInChat)
     {
         var message = await _dbContext.Messages
             .FirstOrDefaultAsync(m => m.ChatId == chatId && m.IdInChat == messageIdInChat);
@@ -235,12 +248,19 @@ public class MessagesService : IMessagesService
             throw new KeyNotFoundException("Message not found");
         }
 
+        // Get the member by userId to check ownership
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (member == null)
+        {
+            throw new ArgumentException("Member not found", nameof(userId));
+        }
+
         // Only the sender can delete their own message, or chat owners can delete any message
-        if (message.SenderId != memberId)
+        if (message.SenderId != member.Id)
         {
             // Check if user is a chat owner
             var isOwner = await _dbContext.ChatMemberships
-                .AnyAsync(cml => cml.ChatId == message.ChatId && cml.MemberId == memberId && cml.RoleInChat == ChatRole.Owner);
+                .AnyAsync(cml => cml.ChatId == message.ChatId && cml.Member.UserId == userId && cml.RoleInChat == ChatRole.Owner);
 
             if (!isOwner)
             {

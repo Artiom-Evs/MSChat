@@ -27,7 +27,7 @@ public class MembersService : IMembersService
         var members = await query
             .Select(m => new MemberDto
             {
-                Id = m.Id,
+                Id = m.UserId,
                 Name = m.Name,
                 PhotoUrl = m.PhotoUrl,
                 CreatedAt = m.CreatedAt,
@@ -38,13 +38,13 @@ public class MembersService : IMembersService
         return members;
     }
 
-    public async Task<MemberDto?> GetMemberByIdAsync(long memberId)
+    public async Task<MemberDto?> GetMemberByUserIdAsync(string userId)
     {
         var member = await _dbContext.Members
-            .Where(m => m.Id == memberId)
+            .Where(m => m.UserId == userId)
             .Select(m => new MemberDto
             {
-                Id = m.Id,
+                Id = m.UserId,
                 Name = m.Name,
                 PhotoUrl = m.PhotoUrl,
                 CreatedAt = m.CreatedAt,
@@ -61,7 +61,7 @@ public class MembersService : IMembersService
             .Where(m => m.UserId == userId)
             .Select(m => new MemberDto
             {
-                Id = m.Id,
+                Id = m.UserId,
                 Name = m.Name,
                 PhotoUrl = m.PhotoUrl,
                 CreatedAt = m.CreatedAt,

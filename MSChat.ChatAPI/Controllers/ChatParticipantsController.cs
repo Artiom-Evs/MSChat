@@ -1,12 +1,10 @@
-using System.Net;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI.Data;
-using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Extensions;
 using MSChat.ChatAPI.Models.DTOs;
 using MSChat.ChatAPI.Services;
+using System.Net;
 
 namespace MSChat.ChatAPI.Controllers;
 
@@ -40,11 +38,11 @@ public class ChatParticipantsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<ActionResult<IEnumerable<ChatParticipantDto>>> GetChatParticipants(long chatId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
-
+        var userId = HttpContext.User.GetUserId();
+        
         try
         {
-            var participants = await _participantsService.GetChatParticipantsAsync(member.Id, chatId);
+            var participants = await _participantsService.GetChatParticipantsAsync(userId, chatId);
             return Ok(participants);
         }
         catch (UnauthorizedAccessException)
@@ -77,11 +75,11 @@ public class ChatParticipantsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var participant = await _participantsService.AddParticipantAsync(member.Id, chatId, addParticipantDto);
+            var participant = await _participantsService.AddParticipantAsync(userId, chatId, addParticipantDto);
             return CreatedAtAction(nameof(GetChatParticipants), new { chatId }, participant);
         }
         catch (KeyNotFoundException)
@@ -111,24 +109,24 @@ public class ChatParticipantsController : ControllerBase
     /// <param name="participantMemberId">The participant member ID</param>
     /// <param name="updateRoleDto">New role details</param>
     /// <returns>No content if successful</returns>
-    [HttpPut("{participantMemberId}/role")]
+    [HttpPut("{participantUserId}/role")]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-    public async Task<IActionResult> UpdateParticipantRole(long chatId, long participantMemberId, UpdateParticipantRoleDto updateRoleDto)
+    public async Task<IActionResult> UpdateParticipantRole(long chatId, string participantUserId, UpdateParticipantRoleDto updateRoleDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _participantsService.UpdateParticipantRoleAsync(member.Id, chatId, participantMemberId, updateRoleDto);
+            await _participantsService.UpdateParticipantRoleAsync(userId, chatId, participantUserId, updateRoleDto);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -150,20 +148,20 @@ public class ChatParticipantsController : ControllerBase
     /// Remove a participant from a chat
     /// </summary>
     /// <param name="chatId">The chat ID</param>
-    /// <param name="participantMemberId">The participant member ID to remove</param>
+    /// <param name="participantUserId">The participant member ID to remove</param>
     /// <returns>No content if successful</returns>
-    [HttpDelete("{participantMemberId}")]
+    [HttpDelete("{participantUserId}")]
     [ProducesResponseType((int)HttpStatusCode.NoContent)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-    public async Task<IActionResult> RemoveParticipant(long chatId, long participantMemberId)
+    public async Task<IActionResult> RemoveParticipant(long chatId, string participantUserId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _participantsService.RemoveParticipantAsync(member.Id, chatId, participantMemberId);
+            await _participantsService.RemoveParticipantAsync(userId, chatId, participantUserId);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -194,11 +192,11 @@ public class ChatParticipantsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<IActionResult> JoinChat(long chatId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _participantsService.JoinChatAsync(member.Id, chatId);
+            await _participantsService.JoinChatAsync(userId, chatId);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -229,11 +227,11 @@ public class ChatParticipantsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<IActionResult> LeaveChat(long chatId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _participantsService.LeaveChatAsync(member.Id, chatId);
+            await _participantsService.LeaveChatAsync(userId, chatId);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -245,32 +243,5 @@ public class ChatParticipantsController : ControllerBase
             ModelState.AddModelError("", ex.Message);
             return BadRequest(ModelState);
         }
-    }
-
-    private async Task<ChatMember> GetOrCreateChatMemberAsync(HttpContext context)
-    {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            throw new UnauthorizedAccessException("User is not authenticated.");
-        }
-
-        var member = await _dbContext.Members
-            .FirstOrDefaultAsync(m => m.UserId == userId);
-
-        if (member == null)
-        {
-            member = new ChatMember
-            {
-                UserId = userId,
-                Name = context.User.FindFirstValue(ClaimTypes.Name) ?? "Unknown",
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.Members.Add(member);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        return member;
     }
 }

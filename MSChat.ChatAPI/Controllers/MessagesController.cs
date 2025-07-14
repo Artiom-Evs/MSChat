@@ -1,16 +1,12 @@
-using System.Net;
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI.Commands;
 using MSChat.ChatAPI.Data;
-using MSChat.ChatAPI.Models;
+using MSChat.ChatAPI.Extensions;
 using MSChat.ChatAPI.Models.DTOs;
 using MSChat.ChatAPI.Queries;
-using MSChat.ChatAPI.Services;
+using System.Net;
 
 namespace MSChat.ChatAPI.Controllers;
 
@@ -21,7 +17,7 @@ public class MessagesController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ISender _mediatr;
-    
+
     public MessagesController(ApplicationDbContext dbContext, ISender commandBus)
     {
         _dbContext = dbContext;
@@ -42,8 +38,8 @@ public class MessagesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(
-        long chatId, 
-        [FromQuery] int limit= 50, 
+        long chatId,
+        [FromQuery] int limit = 50,
         [FromQuery] long? offset = null)
     {
         if (limit < 1 || limit > 100)
@@ -57,11 +53,11 @@ public class MessagesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-            var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var query = new GetMessagesQuery(member.Id, chatId, limit, offset);
+            var query = new GetMessagesQuery(userId, chatId, limit, offset);
             var messages = await _mediatr.Send(query);
             return Ok(messages);
         }
@@ -84,13 +80,13 @@ public class MessagesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Forbidden)]
     public async Task<ActionResult<MessageDto>> GetMessage(long chatId, long messageId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var query = new GetMessageQuery(member.Id, chatId, messageId);
+            var query = new GetMessageQuery(userId, chatId, messageId);
             var message = await _mediatr.Send(query);
-            
+
             if (message == null)
             {
                 return NotFound();
@@ -129,11 +125,11 @@ public class MessagesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var cmd = new SendMessageCommand(member.Id, chatId, createMessageDto);
+            var cmd = new SendMessageCommand(userId, chatId, createMessageDto);
             var message = await _mediatr.Send(cmd);
             return CreatedAtAction(nameof(GetMessage), new { chatId, messageId = message.Id }, message);
         }
@@ -167,11 +163,11 @@ public class MessagesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var cmd = new UpdateMessageCommand(member.Id, chatId, messageId, updateMessageDto);
+            var cmd = new UpdateMessageCommand(userId, chatId, messageId, updateMessageDto);
             await _mediatr.Send(cmd);
             return NoContent();
         }
@@ -202,11 +198,11 @@ public class MessagesController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> DeleteMessage(long chatId, long messageId)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var cmd = new DeleteMessageCommand(member.Id, chatId, messageId);
+            var cmd = new DeleteMessageCommand(userId, chatId, messageId);
             await _mediatr.Send(cmd);
             return NoContent();
         }
@@ -218,32 +214,5 @@ public class MessagesController : ControllerBase
         {
             return NotFound();
         }
-    }
-
-    private async Task<ChatMember> GetOrCreateChatMemberAsync(HttpContext context)
-    {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            throw new UnauthorizedAccessException("User is not authenticated.");
-        }
-
-        var member = await _dbContext.Members
-            .FirstOrDefaultAsync(m => m.UserId == userId);
-
-        if (member == null)
-        {
-            member = new ChatMember
-            {
-                UserId = userId,
-                Name = context.User.FindFirstValue(ClaimTypes.Name) ?? "Unknown",
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.Members.Add(member);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        return member;
     }
 }

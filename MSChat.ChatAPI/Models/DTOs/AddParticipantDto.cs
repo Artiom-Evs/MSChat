@@ -5,7 +5,7 @@ namespace MSChat.ChatAPI.Models.DTOs;
 public class AddParticipantDto
 {
     [Required]
-    public long MemberId { get; set; }
+    public string UserId { get; set; } = "";
     
     [EnumDataType(typeof(ChatRole))]
     public ChatRole RoleInChat { get; set; } = ChatRole.Member;

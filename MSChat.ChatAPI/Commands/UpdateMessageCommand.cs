@@ -3,4 +3,4 @@ using MSChat.ChatAPI.Models.DTOs;
 
 namespace MSChat.ChatAPI.Commands;
 
-public record UpdateMessageCommand(long MemberId, long ChatId, long MessageIdInChat, UpdateMessageDto UpdateMessage) : IRequest;
+public record UpdateMessageCommand(string UserId, long ChatId, long MessageIdInChat, UpdateMessageDto UpdateMessage) : IRequest;

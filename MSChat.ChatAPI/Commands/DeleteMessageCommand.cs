@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MSChat.ChatAPI.Commands;
 
-public record DeleteMessageCommand(long MemberId, long ChatId, long MessageIdInChat) : IRequest;
+public record DeleteMessageCommand(string UserId, long ChatId, long MessageIdInChat) : IRequest;

@@ -18,10 +18,10 @@ public class ChatsService : IChatsService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<ChatDto>> GetChatsAsync(long memberId, string? search = null)
+    public async Task<IEnumerable<ChatDto>> GetChatsAsync(string userId, string? search = null)
     {
         var query = _dbContext.Chat
-            .Where(c => c.Type == ChatType.Public  || c.Members.Any(m => m.MemberId == memberId));
+            .Where(c => c.Type == ChatType.Public  || c.Members.Any(m => m.Member.UserId == userId));
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -36,13 +36,13 @@ public class ChatsService : IChatsService
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
                 DeletedAt = c.DeletedAt,
-                IsInChat = c.Members.Any(m => m.MemberId == memberId),
+                IsInChat = c.Members.Any(m => m.Member.UserId == userId),
                 Participants = c.Members
                     .Take(2)
                     .Select(cm => new ChatParticipantDto
                     {
                         ChatId = c.Id,
-                        MemberId = cm.MemberId,
+                        MemberId = cm.Member.UserId,
                         MemberName = cm.Member.Name,
                         MemberPhotoUrl = cm.Member.PhotoUrl,
                         RoleInChat = cm.RoleInChat,
@@ -59,7 +59,7 @@ public class ChatsService : IChatsService
                           {
                               Id = m.Id,
                               ChatId = m.ChatId,
-                              SenderId = m.SenderId,
+                              SenderId = member.UserId,
                               SenderName = member.Name,
                               SenderPhotoUrl = member.PhotoUrl,
                               Text = m.Text,
@@ -73,7 +73,8 @@ public class ChatsService : IChatsService
 
         var chatMemberships = await _dbContext.ChatMemberships
             .Include(m => m.Chat)
-            .Where(m => m.MemberId == memberId)
+            .Include(m => m.Member)
+            .Where(m => m.Member.UserId == userId)
             .ToListAsync();
 
         foreach (var chat in chats)
@@ -90,10 +91,10 @@ public class ChatsService : IChatsService
         return chats;
     }
 
-    public async Task<ChatDto?> GetChatByIdAsync(long memberId, long chatId)
+    public async Task<ChatDto?> GetChatByIdAsync(string userId, long chatId)
     {
         var chat = await _dbContext.Chat
-            .Where(c => c.Id == chatId && (c.Type == ChatType.Public || c.Members.Any(m => m.MemberId == memberId)))
+            .Where(c => c.Id == chatId && (c.Type == ChatType.Public || c.Members.Any(m => m.Member.UserId == userId)))
             .Select(c => new ChatDto
             {
                 Id = c.Id,
@@ -101,11 +102,11 @@ public class ChatsService : IChatsService
                 Type = c.Type,
                 CreatedAt = c.CreatedAt,
                 DeletedAt = c.DeletedAt,
-                IsInChat = c.Members.Any(m => m.MemberId == memberId),
+                IsInChat = c.Members.Any(m => m.Member.UserId == userId),
                 Participants = c.Members.Select(cm => new ChatParticipantDto
                 {
                     ChatId = c.Id,
-                    MemberId = cm.MemberId,
+                    MemberId = cm.Member.UserId,
                     MemberName = cm.Member.Name,
                     MemberPhotoUrl = cm.Member.PhotoUrl,
                     RoleInChat = cm.RoleInChat,
@@ -117,29 +118,35 @@ public class ChatsService : IChatsService
         return chat;
     }
 
-    public async Task<ChatDto> CreateChatAsync(long memberId, CreateChatDto createChatDto)
+    public async Task<ChatDto> CreateChatAsync(string userId, CreateChatDto createChatDto)
     {
-        var member = await _dbContext.Members.FindAsync(memberId);
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
         if (member == null)
         {
-            throw new ArgumentException("Member not found", nameof(memberId));
+            throw new ArgumentException("Member not found", nameof(userId));
         }
 
         if (createChatDto.Type == ChatType.Personal)
         {
-            return await CreatePersonalChatAsync(memberId, createChatDto);
+            return await CreatePersonalChatAsync(userId, createChatDto);
         }
         else
         {
-            return await CreatePublicChatAsync(memberId, createChatDto);
+            return await CreatePublicChatAsync(userId, createChatDto);
         }
     }
 
-    private async Task<ChatDto> CreatePersonalChatAsync(long memberId, CreateChatDto createChatDto)
+    private async Task<ChatDto> CreatePersonalChatAsync(string userId, CreateChatDto createChatDto)
     {
         if (!createChatDto.OtherMemberId.HasValue)
         {
             throw new ArgumentException("OtherMemberId is required for personal chats", nameof(createChatDto.OtherMemberId));
+        }
+
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (member == null)
+        {
+            throw new ArgumentException("Member not found", nameof(userId));
         }
 
         var otherMember = await _dbContext.Members.FindAsync(createChatDto.OtherMemberId.Value);
@@ -152,7 +159,7 @@ public class ChatsService : IChatsService
         var existingChat = await _dbContext.Chat
             .Where(c => c.Type == ChatType.Personal && 
                        c.Members.Count == 2 &&
-                       c.Members.Any(m => m.MemberId == memberId) &&
+                       c.Members.Any(m => m.Member.UserId == userId) &&
                        c.Members.Any(m => m.MemberId == createChatDto.OtherMemberId.Value))
             .FirstOrDefaultAsync();
 
@@ -172,7 +179,7 @@ public class ChatsService : IChatsService
                     Participants = c.Members.Select(cm => new ChatParticipantDto
                     {
                         ChatId = c.Id,
-                        MemberId = cm.MemberId,
+                        MemberId = cm.Member.UserId,
                         MemberName = cm.Member.Name,
                         MemberPhotoUrl = cm.Member.PhotoUrl,
                         RoleInChat = cm.RoleInChat,
@@ -197,7 +204,7 @@ public class ChatsService : IChatsService
         _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
-            MemberId = memberId,
+            MemberId = member.Id,
             RoleInChat = ChatRole.Owner,
             JoinedAt = DateTime.UtcNow
         });
@@ -226,7 +233,7 @@ public class ChatsService : IChatsService
                 Participants = c.Members.Select(cm => new ChatParticipantDto
                 {
                     ChatId = c.Id,
-                    MemberId = cm.MemberId,
+                    MemberId = cm.Member.UserId,
                     MemberName = cm.Member.Name,
                     MemberPhotoUrl = cm.Member.PhotoUrl,
                     RoleInChat = cm.RoleInChat,
@@ -238,8 +245,14 @@ public class ChatsService : IChatsService
         return createdChatDto!;
     }
 
-    private async Task<ChatDto> CreatePublicChatAsync(long memberId, CreateChatDto createChatDto)
+    private async Task<ChatDto> CreatePublicChatAsync(string userId, CreateChatDto createChatDto)
     {
+        var member = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == userId);
+        if (member == null)
+        {
+            throw new ArgumentException("Member not found", nameof(userId));
+        }
+
         var chat = new Models.Chat
         {
             Name = createChatDto.Name,
@@ -251,7 +264,7 @@ public class ChatsService : IChatsService
         _dbContext.ChatMemberships.Add(new ChatMembership
         {
             Chat = chat,
-            MemberId = memberId,
+            MemberId = member.Id,
             RoleInChat = ChatRole.Owner,
             JoinedAt = DateTime.UtcNow
         });
@@ -272,7 +285,7 @@ public class ChatsService : IChatsService
                 Participants = c.Members.Select(cm => new ChatParticipantDto
                 {
                     ChatId = c.Id,
-                    MemberId = cm.MemberId,
+                    MemberId = cm.Member.UserId,
                     MemberName = cm.Member.Name,
                     MemberPhotoUrl = cm.Member.PhotoUrl,
                     RoleInChat = cm.RoleInChat,
@@ -284,10 +297,10 @@ public class ChatsService : IChatsService
         return createdChatDto!;
     }
 
-    public async Task UpdateChatAsync(long memberId, long chatId, UpdateChatDto updateChatDto)
+    public async Task UpdateChatAsync(string userId, long chatId, UpdateChatDto updateChatDto)
     {
         var chat = await _dbContext.Chat
-            .FirstOrDefaultAsync(c => c.Id == chatId && c.Members.Any(m => m.MemberId == memberId));
+            .FirstOrDefaultAsync(c => c.Id == chatId && c.Members.Any(m => m.Member.UserId == userId));
 
         if (chat == null)
         {
@@ -295,7 +308,7 @@ public class ChatsService : IChatsService
         }
 
         var chatMemberLink = await _dbContext.ChatMemberships
-            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.Member.UserId == userId);
 
         if (chatMemberLink?.RoleInChat != ChatRole.Owner)
         {
@@ -321,10 +334,10 @@ public class ChatsService : IChatsService
         }
     }
 
-    public async Task DeleteChatAsync(long memberId, long chatId)
+    public async Task DeleteChatAsync(string userId, long chatId)
     {
         var chat = await _dbContext.Chat
-            .FirstOrDefaultAsync(c => c.Id == chatId && c.Members.Any(m => m.MemberId == memberId));
+            .FirstOrDefaultAsync(c => c.Id == chatId && c.Members.Any(m => m.Member.UserId == userId));
 
         if (chat == null)
         {
@@ -332,7 +345,7 @@ public class ChatsService : IChatsService
         }
 
         var chatMemberLink = await _dbContext.ChatMemberships
-            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.MemberId == memberId);
+            .FirstOrDefaultAsync(cml => cml.ChatId == chatId && cml.Member.UserId == userId);
 
         if (chatMemberLink?.RoleInChat != ChatRole.Owner)
         {

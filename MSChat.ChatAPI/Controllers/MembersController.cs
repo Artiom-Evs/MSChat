@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MSChat.ChatAPI.Extensions;
 using MSChat.ChatAPI.Models.DTOs;
 using MSChat.ChatAPI.Services;
 
@@ -40,13 +41,13 @@ public class MembersController : ControllerBase
     /// </summary>
     /// <param name="id">The member ID</param>
     /// <returns>The member details if found</returns>
-    [HttpGet("{id}")]
+    [HttpGet("{userId}")]
     [ProducesResponseType(typeof(MemberDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
-    public async Task<ActionResult<MemberDto>> GetMember(long id)
+    public async Task<ActionResult<MemberDto>> GetMember(string userId)
     {
-        var member = await _membersService.GetMemberByIdAsync(id);
+        var member = await _membersService.GetMemberByUserIdAsync(userId);
         
         if (member == null)
         {
@@ -66,13 +67,7 @@ public class MembersController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<ActionResult<MemberDto>> GetCurrentMember()
     {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized("User is not authenticated.");
-        }
-
+        var userId = HttpContext.User.GetUserId();
         var member = await _membersService.GetCurrentMemberAsync(userId);
         
         if (member == null)

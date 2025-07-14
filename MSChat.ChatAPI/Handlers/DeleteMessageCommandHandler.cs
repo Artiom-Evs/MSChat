@@ -19,7 +19,7 @@ public class DeleteMessageCommandHandler : IRequestHandler<DeleteMessageCommand>
 
     public async Task Handle(DeleteMessageCommand request, CancellationToken cancellationToken)
     {
-        await _messagesService.DeleteMessageAsync(request.MemberId, request.ChatId, request.MessageIdInChat);
+        await _messagesService.DeleteMessageAsync(request.UserId, request.ChatId, request.MessageIdInChat);
         var groupName = ChatHub.GetChatGroupName(request.ChatId);
         await _chatHub.Clients.Group(groupName).MessageDeleted(request.MessageIdInChat);
     }

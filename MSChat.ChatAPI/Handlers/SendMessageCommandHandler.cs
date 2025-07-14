@@ -20,7 +20,7 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
 
     public async Task<MessageDto> Handle(SendMessageCommand request, CancellationToken cancellationToken)
     {
-        var createdMessage = await _messagesService.CreateMessageAsync(request.MemberId, request.ChatId, request.NewMessage);
+        var createdMessage = await _messagesService.CreateMessageAsync(request.UserId, request.ChatId, request.NewMessage);
         var groupName = ChatHub.GetChatGroupName(createdMessage.ChatId);
         await _chatHub.Clients.Group(groupName).NewMessageSent(createdMessage);
         return createdMessage;

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI.Data;
+using MSChat.ChatAPI.Extensions;
 using MSChat.ChatAPI.Models;
 using MSChat.ChatAPI.Models.DTOs;
 using MSChat.ChatAPI.Services;
@@ -39,8 +40,8 @@ public class ChatsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<ActionResult<IEnumerable<ChatDto>>> GetChat([FromQuery] string? search = null)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
-        var chats = await _chatsService.GetChatsAsync(member.Id, search);
+        var userId = HttpContext.User.GetUserId();
+        var chats = await _chatsService.GetChatsAsync(userId, search);
         return Ok(chats);
     }
 
@@ -56,8 +57,8 @@ public class ChatsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<ActionResult<ChatDto?>> GetChat(long id)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
-        var chat = await _chatsService.GetChatByIdAsync(member.Id, id);
+        var userId = HttpContext.User.GetUserId();
+        var chat = await _chatsService.GetChatByIdAsync(userId, id);
         
         if (chat == null)
         {
@@ -87,11 +88,11 @@ public class ChatsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _chatsService.UpdateChatAsync(member.Id, id, updateChatDto);
+            await _chatsService.UpdateChatAsync(userId, id, updateChatDto);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -128,11 +129,11 @@ public class ChatsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            var chatDto = await _chatsService.CreateChatAsync(member.Id, createChatDto);
+            var chatDto = await _chatsService.CreateChatAsync(userId, createChatDto);
             return CreatedAtAction("GetChat", new { id = chatDto.Id }, chatDto);
         }
         catch (ArgumentException ex)
@@ -155,11 +156,11 @@ public class ChatsController : ControllerBase
     [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
     public async Task<IActionResult> DeleteChat(long id)
     {
-        var member = await GetOrCreateChatMemberAsync(HttpContext);
+        var userId = HttpContext.User.GetUserId();
 
         try
         {
-            await _chatsService.DeleteChatAsync(member.Id, id);
+            await _chatsService.DeleteChatAsync(userId, id);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -170,32 +171,5 @@ public class ChatsController : ControllerBase
         {
             return Forbid();
         }
-    }
-
-    private async Task<ChatMember> GetOrCreateChatMemberAsync(HttpContext context)
-    {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            throw new UnauthorizedAccessException("User is not authenticated.");
-        }
-
-        var member = await _dbContext.Members
-            .FirstOrDefaultAsync(m => m.UserId == userId);
-
-        if (member == null)
-        {
-            member = new ChatMember
-            {
-                UserId = userId,
-                Name = context.User.FindFirstValue(ClaimTypes.Name) ?? "Unknown",
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.Members.Add(member);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        return member;
     }
 }

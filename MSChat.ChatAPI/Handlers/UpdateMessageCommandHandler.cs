@@ -19,8 +19,8 @@ public class UpdateMessageCommandHandler : IRequestHandler<UpdateMessageCommand>
 
     public async Task Handle(UpdateMessageCommand request, CancellationToken cancellationToken)
     {
-        await _messagesService.UpdateMessageAsync(request.MemberId, request.ChatId, request.MessageIdInChat, request.UpdateMessage);
-        var updatedMessage = await _messagesService.GetMessageByIdAsync(request.MemberId, request.ChatId, request.MessageIdInChat);
+        await _messagesService.UpdateMessageAsync(request.UserId, request.ChatId, request.MessageIdInChat, request.UpdateMessage);
+        var updatedMessage = await _messagesService.GetMessageByIdAsync(request.UserId, request.ChatId, request.MessageIdInChat);
         var groupName = ChatHub.GetChatGroupName(request.ChatId);
         await _chatHub.Clients.Group(groupName).MessageUpdated(updatedMessage!);
     }

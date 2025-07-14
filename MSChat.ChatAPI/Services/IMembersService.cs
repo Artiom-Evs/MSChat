@@ -5,6 +5,6 @@ namespace MSChat.ChatAPI.Services;
 public interface IMembersService
 {
     Task<IEnumerable<MemberDto>> GetMembersAsync(string? search = null);
-    Task<MemberDto?> GetMemberByIdAsync(long memberId);
+    Task<MemberDto?> GetMemberByUserIdAsync(string userId);
     Task<MemberDto?> GetCurrentMemberAsync(string userId);
 }
