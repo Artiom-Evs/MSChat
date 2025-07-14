@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI;
 using MSChat.ChatAPI.Data;
 using MSChat.ChatAPI.Hubs;
+using MSChat.ChatAPI.Middlewares;
 using MSChat.ChatAPI.Services;
 using MSChat.Shared.Auth.Handlers;
 using MSChat.Shared.Auth.Requirements;
@@ -80,6 +81,7 @@ builder.Services.AddScoped<IMembersService, MembersService>();
 builder.Services.AddScoped<IChatParticipantsService, ChatParticipantsService>();
 builder.Services.AddScoped<IMessagesService, MessagesService>();
 builder.Services.AddScoped<IChatMessageIdService, ChatMessageIdService>();
+builder.Services.AddScoped<IMemberRegistrationService, MemberRegistrationService>();
 
 var app = builder.Build();
 
@@ -97,6 +99,8 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<MemberRegistrationMiddleware>();
 
 app.MapHub<ChatHub>("/_hubs/chat");
 app.MapControllers();
