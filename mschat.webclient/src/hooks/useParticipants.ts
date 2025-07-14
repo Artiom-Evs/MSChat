@@ -39,7 +39,7 @@ export const useUpdateParticipantRole = () => {
       roleUpdate,
     }: {
       chatId: number;
-      participantMemberId: number;
+      participantMemberId: string;
       roleUpdate: UpdateParticipantRoleDto;
     }) =>
       chatApi.updateParticipantRole(chatId, participantMemberId, roleUpdate),
@@ -60,7 +60,7 @@ export const useRemoveParticipant = () => {
       participantMemberId,
     }: {
       chatId: number;
-      participantMemberId: number;
+      participantMemberId: string;
     }) => chatApi.removeParticipant(chatId, participantMemberId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

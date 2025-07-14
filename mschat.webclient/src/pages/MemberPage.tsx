@@ -22,7 +22,7 @@ import { ChatType } from '../types';
 const MemberPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const memberId = id ? parseInt(id, 10) : 0;
+  const memberId = id ?? "";
   
   const { data: member, isLoading, error } = useMember(memberId);
   const { data: me } = useCurrentMember();

@@ -70,7 +70,7 @@ const SearchPage: React.FC = () => {
     navigate(`/chats/${chatId}`);
   };
 
-  const handleMemberClick = (memberId: number) => {
+  const handleMemberClick = (memberId: string) => {
     navigate(`/members/${memberId}`);
   };
 

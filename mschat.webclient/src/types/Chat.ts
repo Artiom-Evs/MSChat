@@ -26,7 +26,7 @@ export interface CreateChatDto {
   name: string;
   type: ChatType;
   // used for personal chats creation
-  otherMemberId?: number;
+  otherMemberId?: string;
 }
 
 export interface UpdateChatDto {
@@ -35,7 +35,7 @@ export interface UpdateChatDto {
 
 export interface ChatParticipantDto {
   chatId: number;
-  memberId: number;
+  memberId: string;
   memberName: string;
   memberPhotoUrl?: string;
   roleInChat: ChatRole;
@@ -52,7 +52,7 @@ export interface UpdateParticipantRoleDto {
 }
 
 export interface MemberDto {
-  id: number;
+  id: string;
   name: string;
   photoUrl?: string;
   createdAt: string;
@@ -62,7 +62,7 @@ export interface MemberDto {
 export interface MessageDto {
   id: number;
   chatId: number;
-  senderId: number;
+  senderId: string;
   senderName: string;
   senderPhotoUrl?: string;
   text: string;

@@ -8,7 +8,7 @@ export const useMembers = (search?: string) => {
   });
 };
 
-export const useMember = (memberId: number) => {
+export const useMember = (memberId: string) => {
   return useQuery({
     queryKey: ["member", memberId],
     queryFn: () => chatApi.getMember(memberId),

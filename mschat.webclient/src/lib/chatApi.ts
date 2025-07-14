@@ -79,7 +79,7 @@ class ChatApiService {
 
   updateParticipantRole = (
     chatId: number,
-    participantMemberId: number,
+    participantMemberId: string,
     roleUpdate: UpdateParticipantRoleDto
   ): Promise<void> =>
     this.instance
@@ -91,7 +91,7 @@ class ChatApiService {
 
   removeParticipant = (
     chatId: number,
-    participantMemberId: number
+    participantMemberId: string
   ): Promise<void> =>
     this.instance
       .delete(`v1/chats/${chatId}/participants/${participantMemberId}`)
@@ -111,7 +111,7 @@ class ChatApiService {
       })
       .then((response) => response.data);
 
-  getMember = (memberId: number): Promise<MemberDto | null> =>
+  getMember = (memberId: string): Promise<MemberDto | null> =>
     this.instance
       .get<MemberDto | null>(`v1/members/${memberId}`)
       .then((response) => response.data);
