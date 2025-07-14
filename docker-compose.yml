@@ -40,6 +40,7 @@ services:
       - WebClient__OidcServerUri=http://localhost:5000
       - WebClient__OidcClientId=mschat.webclient
       - WebClient__ChatApiUri=http://localhost:5004
+      - WebClient__PresenceApiUri=http://localhost:5006
       
   chatapi:
     build:
