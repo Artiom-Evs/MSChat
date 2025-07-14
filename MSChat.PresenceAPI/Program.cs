@@ -60,7 +60,10 @@ builder.Services.AddCors(options =>
     }); ;
 });
 
-builder.Services.AddSignalR();
+builder.Services
+    .AddSignalR()
+    .AddStackExchangeRedis(redisSettings.ConnectionString);
+
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
 builder.Services.AddScoped<IUserPresenceService, UserPresenceService>();
 

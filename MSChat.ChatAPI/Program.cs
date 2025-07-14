@@ -69,10 +69,12 @@ builder.Services.AddCors(options =>
     }); ;
 });
 
-builder.Services.AddAuthorization();
+builder.Services
+    .AddSignalR()
+    .AddStackExchangeRedis(redisSettings.ConnectionString);
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddSignalR();
 builder.Services.AddMediatR(o => o.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddHostedService<DatabaseMigrationService>();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
