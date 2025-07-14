@@ -27,7 +27,7 @@ public class UserPresenceService : IUserPresenceService
     public async Task SetPresenceStatusAsync(string userId, string status)
     {
         var statusKey = GetUserStatusKey(userId);
-        await _redis.StringSetAsync(statusKey, status);
+        await _redis.StringSetAsync(statusKey, status, TimeSpan.FromSeconds(10));
     }
 
     private string GetUserStatusKey(string userId) =>

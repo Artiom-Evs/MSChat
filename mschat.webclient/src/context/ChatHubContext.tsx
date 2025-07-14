@@ -32,9 +32,7 @@ export const ChatHubProvider: React.FC<ChatHubProps> = ({ children, hubUrl }) =>
     }
     
     const connection = new HubConnectionBuilder()
-      .withUrl(hubUrl, { 
-        accessTokenFactory
-      })
+      .withUrl(hubUrl, { accessTokenFactory })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build();

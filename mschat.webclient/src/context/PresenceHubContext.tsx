@@ -21,6 +21,7 @@ type PresenceHubProps = {
 
 export const PresenceHubProvider: React.FC<PresenceHubProps> = ({ children, hubUrl }) => {
   const connectionRef = useRef<HubConnection | null>(null);
+  const broadcastRef = useRef<unknown | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const auth = useAuth();
 
@@ -32,9 +33,7 @@ export const PresenceHubProvider: React.FC<PresenceHubProps> = ({ children, hubU
     }
     
     const connection = new HubConnectionBuilder()
-      .withUrl(hubUrl, { 
-        accessTokenFactory
-      })
+      .withUrl(hubUrl, { accessTokenFactory })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build();
@@ -54,6 +53,21 @@ export const PresenceHubProvider: React.FC<PresenceHubProps> = ({ children, hubU
     
     startConnection();
   }, [auth.isAuthenticated, connectionRef.current]);
+
+  useEffect(() => {
+    if (broadcastRef.current || !connectionRef.current) return;
+
+    broadcastRef.current = setInterval(() => {
+      connectionRef.current?.invoke("BroadcastOnlineStatus")
+        .catch(e => console.error("Error while broadcasting online status.", e));
+    }, 5000);
+
+    return () => {
+      if (broadcastRef.current) {
+        clearTimeout(broadcastRef.current as any);
+      }
+    }
+  }, [connectionRef.current]);
 
   return (
     <PresenceHubContext.Provider

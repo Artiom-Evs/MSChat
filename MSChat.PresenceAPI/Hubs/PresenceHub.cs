@@ -52,6 +52,14 @@ public class PresenceHub : Hub<IPresenceHubClient>
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
     }
 
+    public async Task BroadcastOnlineStatus()
+    {
+        var userId = Context.UserIdentifier!;
+        var groupName = GetUserStatusSubscriptionName(userId);
+        await _presenceService.SetPresenceStatusAsync(userId, PresenceStatus.Online);
+        await Clients.Group(groupName).PresenceStatusChanged(userId, PresenceStatus.Online);
+    }
+
     private string GetUserStatusSubscriptionName(string userId) =>
         $"user:{userId}";
 }

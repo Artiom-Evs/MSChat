@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePresenceHub } from "../context";
 
 interface UseUserStatusProps {
@@ -7,6 +7,7 @@ interface UseUserStatusProps {
 
 export function useUserStatus(props: UseUserStatusProps) {
   const hub = usePresenceHub();
+  const statusTrackerRef = useRef<unknown | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,23 +50,40 @@ export function useUserStatus(props: UseUserStatusProps) {
   const handleStatusChange = (userId: string, newStatus: string) => {
     if (props.userId == userId) {
       setStatus(newStatus);
+
+      if (newStatus == "online") {
+        resetStatusTracker();
+      }
     }
   };
 
   const updateUserStatus = async () => {
     if (!hub.connection) {
-      console.warn(
-        "PresenceHub: Not not connected to PresenceAPI SignalR hub."
-      );
+      console.warn("PresenceHub: Not connected to PresenceAPI SignalR hub.");
       return;
     }
 
     hub.connection
       .invoke<string>("GetUserStatus", props.userId)
-      .then(setStatus)
+      .then((newStatus) => {
+        setStatus(newStatus);
+        if (newStatus == "online") {
+          resetStatusTracker();
+        }
+      })
       .catch((err) => {
         console.error("PresenceHub: User status update failed.", err);
       });
+  };
+
+  const resetStatusTracker = () => {
+    if (statusTrackerRef.current) {
+      clearTimeout(statusTrackerRef.current as any);
+    }
+
+    statusTrackerRef.current = setTimeout(() => {
+      setStatus("offline");
+    }, 10000);
   };
 
   return { status };
