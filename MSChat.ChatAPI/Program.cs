@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 var authSettings = builder.Configuration.GetAuthSettings();
 var corsSettings = builder.Configuration.GetCorsSettings();
 var redisSettings = builder.Configuration.GetRedisSettings();
+var rmqSettings = builder.Configuration.GetRabbitMQSettings();
 
 var connectionString = builder.Configuration.GetConnectionString("ChatDBConnection")
     ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.");
@@ -26,6 +28,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(rmqSettings.Host, "/", h =>
+        {
+            h.Username(rmqSettings.Username);
+            h.Password(rmqSettings.Password);
+        });
+    });
+});
 
 builder.Services.
     AddAuthentication(options =>

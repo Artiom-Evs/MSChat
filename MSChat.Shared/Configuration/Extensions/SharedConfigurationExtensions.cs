@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Extensions.Configuration;
 using MSChat.ChatAPI.Configurations;
+using MSChat.Shared.Configuration.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace MSChat.Shared.Configuration.Extensions;
@@ -47,5 +48,16 @@ public static class SharedConfigurationExtensions
         Validator.ValidateObject(redisSettings!, redisSettingsValidationContext, validateAllProperties: true);
 
         return redisSettings;
+    }
+
+    public static RabbitMQSettings GetRabbitMQSettings(this IConfiguration configuration)
+    {
+        var rmqSettings = configuration
+            .GetRequiredSection(RabbitMQSettings.Position)
+            .Get<RabbitMQSettings>()!;
+        var rmqSettingsValidationContext = new ValidationContext(rmqSettings);
+        Validator.ValidateObject(rmqSettings!, rmqSettingsValidationContext, validateAllProperties: true);
+
+        return rmqSettings;
     }
 }
