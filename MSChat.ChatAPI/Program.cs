@@ -1,16 +1,21 @@
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using MSChat.ChatAPI;
 using MSChat.ChatAPI.Data;
 using MSChat.ChatAPI.Hubs;
 using MSChat.ChatAPI.Middlewares;
 using MSChat.ChatAPI.Services;
+using MSChat.ChatAPI.Services.Grpc;
 using MSChat.Shared.Auth.Handlers;
 using MSChat.Shared.Auth.Requirements;
 using MSChat.Shared.Configuration.Extensions;
+using NuGet.Protocol;
 using StackExchange.Redis;
+using System;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +24,8 @@ var authSettings = builder.Configuration.GetAuthSettings();
 var corsSettings = builder.Configuration.GetCorsSettings();
 var redisSettings = builder.Configuration.GetRedisSettings();
 var rmqSettings = builder.Configuration.GetRabbitMQSettings();
+
+builder.WebHost.ConfigureKestrelWithGrpc();
 
 var connectionString = builder.Configuration.GetConnectionString("ChatDBConnection")
     ?? throw new InvalidOperationException("Connection string 'ApplicationDbContext' not found.");
@@ -89,6 +96,7 @@ builder.Services
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddGrpc();
 builder.Services.AddMediatR(o => o.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddHostedService<DatabaseMigrationService>();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
@@ -119,6 +127,7 @@ app.UseAuthorization();
 app.UseMiddleware<MemberRegistrationMiddleware>();
 
 app.MapHub<ChatHub>("/_hubs/chat");
+app.MapGrpcService<ChatAPIService>();
 app.MapControllers();
 
 app.Run();
