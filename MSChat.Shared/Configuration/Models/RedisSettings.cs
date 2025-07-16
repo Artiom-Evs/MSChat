@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MSChat.ChatAPI.Configurations;
+namespace MSChat.Shared.Configuration.Models;
 
 public class RedisSettings
 {

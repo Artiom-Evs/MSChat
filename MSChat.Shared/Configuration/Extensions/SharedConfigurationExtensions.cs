@@ -1,6 +1,4 @@
-﻿
-using Microsoft.Extensions.Configuration;
-using MSChat.ChatAPI.Configurations;
+﻿using Microsoft.Extensions.Configuration;
 using MSChat.Shared.Configuration.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -59,5 +57,16 @@ public static class SharedConfigurationExtensions
         Validator.ValidateObject(rmqSettings!, rmqSettingsValidationContext, validateAllProperties: true);
 
         return rmqSettings;
+    }
+
+    public static GrpcSettings GetGrpcSettings(this IConfiguration configuration)
+    {
+        var grpcSettings = configuration
+            .GetRequiredSection(GrpcSettings.Position)
+            .Get<GrpcSettings>()!;
+        var grpcSettingsValidationContext = new ValidationContext(grpcSettings);
+        Validator.ValidateObject(grpcSettings!, grpcSettingsValidationContext, validateAllProperties: true);
+
+        return grpcSettings;
     }
 }
