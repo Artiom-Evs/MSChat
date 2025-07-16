@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "MSChat.Shared.Contracts";
+
+package presenceapi;
+
+// The presence service definition.
+service PresenceAPI {
+  rpc GetUsersStatus (GetUsersStatusRequest) returns (GetUsersStatusResponse);
+}
+
+message GetUsersStatusRequest {
+  repeated string userIds = 1;
+}
+
+message UserStatus {
+  string userId = 1;
+  string status = 2;
+}
+
+message GetUsersStatusResponse {
+  repeated UserStatus users = 1;
+}

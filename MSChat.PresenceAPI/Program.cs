@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using MSChat.PresenceAPI;
 using MSChat.PresenceAPI.Hubs;
 using MSChat.PresenceAPI.Services;
+using MSChat.PresenceAPI.Services.Grpc;
 using MSChat.Shared.Auth.Handlers;
 using MSChat.Shared.Auth.Requirements;
 using MSChat.Shared.Configuration.Extensions;
@@ -14,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 var authSettings = builder.Configuration.GetAuthSettings();
 var corsSettings = builder.Configuration.GetCorsSettings();
 var redisSettings = builder.Configuration.GetRedisSettings();
+
+builder.WebHost.ConfigureKestrelWithGrpc();
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(redisSettings.ConnectionString));
@@ -64,6 +67,7 @@ builder.Services
     .AddSignalR()
     .AddStackExchangeRedis(redisSettings.ConnectionString);
 
+builder.Services.AddGrpc();
 builder.Services.AddSingleton<IAuthorizationHandler, ScopeHandler>();
 builder.Services.AddScoped<IUserPresenceService, UserPresenceService>();
 
@@ -77,5 +81,6 @@ app.UseAuthorization();
 
 app.MapGet("/", () => "Hello World!");
 app.MapHub<PresenceHub>("/_hubs/presence");
+app.MapGrpcService<PresenceAPIService>();
 
 app.Run();
