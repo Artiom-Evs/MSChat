@@ -1,14 +1,23 @@
 ﻿using MassTransit;
+using MSChat.NotificationWorker.Services;
 using MSChat.Shared.Events;
 
 namespace MSChat.NotificationWorker.Consumers;
 
 public class ChatMessageSentConsumer : IConsumer<ChatMessageSent>
 {
-    public Task Consume(ConsumeContext<ChatMessageSent> context)
-    {
-        Console.WriteLine(context.Message);
+    private readonly INotificationService _notificationService;
 
-        return Task.CompletedTask;
+    public ChatMessageSentConsumer(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    public async Task Consume(ConsumeContext<ChatMessageSent> context)
+    {
+        // TODO: refactor to persistent storage instead task sleep
+        await Task.Delay(TimeSpan.FromMinutes(5));
+
+        await _notificationService.NotifyUsersAsync(context.Message);
     }
 }

@@ -1,9 +1,13 @@
 using MassTransit;
+using MSChat.NotificationWorker.Configuration;
+using MSChat.NotificationWorker.Services;
 using MSChat.Shared.Configuration.Extensions;
+using MSChat.Shared.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var rmqSettings = builder.Configuration.GetRabbitMQSettings();
+var servicesSettings = builder.Configuration.GetServicesSettings();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -20,6 +24,17 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddGrpcClient<ChatAPI.ChatAPIClient>(options =>
+{
+    options.Address = new Uri(servicesSettings.ChatApiUri);
+});
+builder.Services.AddGrpcClient<PresenceAPI.PresenceAPIClient>(options =>
+{
+    options.Address = new Uri(servicesSettings.PresenceApiUri);
+});
+
+builder.Services.AddSingleton<INotificationService, NotificationService>();
 
 var app = builder.Build();
 
