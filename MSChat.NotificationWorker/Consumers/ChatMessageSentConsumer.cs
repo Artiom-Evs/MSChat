@@ -16,7 +16,7 @@ public class ChatMessageSentConsumer : IConsumer<ChatMessageSent>
     public async Task Consume(ConsumeContext<ChatMessageSent> context)
     {
         // TODO: refactor to persistent storage instead task sleep
-        await Task.Delay(TimeSpan.FromMinutes(5));
+        await Task.Delay(TimeSpan.FromSeconds(5));
 
         await _notificationService.NotifyUsersAsync(context.Message);
     }

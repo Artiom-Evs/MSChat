@@ -1,10 +1,12 @@
 ﻿using Grpc.Core;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using MSChat.ChatAPI.Queries;
 using MSChat.Shared.Contracts;
 
 namespace MSChat.ChatAPI.Services.Grpc;
 
+[Authorize]
 public class ChatAPIService : Shared.Contracts.ChatAPI.ChatAPIBase
 {
     private readonly ISender _mediatr;

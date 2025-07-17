@@ -1,8 +1,10 @@
 ﻿using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using MSChat.Shared.Contracts;
 
 namespace MSChat.PresenceAPI.Services.Grpc;
 
+[Authorize]
 public class PresenceAPIService : Shared.Contracts.PresenceAPI.PresenceAPIBase
 {
     private readonly IUserPresenceService _presenceService;

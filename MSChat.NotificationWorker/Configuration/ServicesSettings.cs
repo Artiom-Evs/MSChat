@@ -4,7 +4,7 @@ namespace MSChat.NotificationWorker.Configuration;
 
 public class ServicesSettings
 {
-    public const string Position = "Grpc";
+    public const string Position = "Services";
 
     [Required]
     [Url]
@@ -13,4 +13,8 @@ public class ServicesSettings
     [Required]
     [Url]
     public string PresenceApiUri { get; init; } = "";
+
+    [Required]
+    [Url]
+    public string AuthApiUri { get; init; } = "";
 }
