@@ -8,10 +8,13 @@ MSChat is a multi-service application implementing microservices architecture wi
 
 - **MSChat.Auth** - OrchardCore CMS-based OpenID Connect authentication server (.NET 8.0)
 - **MSChat.WebBFF** - ASP.NET Core minimal API serving React SPA and runtime configuration (.NET 9.0)
-- **MSChat.Chat** - Dedicated chat API service handling all chat functionality (.NET 9.0)
+- **MSChat.ChatAPI** - Dedicated chat API service handling all chat functionality (.NET 9.0)
+- **MSChat.PresenceAPI** - User presence tracking service (.NET 9.0)
+- **MSChat.NotificationWorker** - Background notification service (.NET 9.0)
+- **MSChat.Shared** - Shared contracts and configurations (.NET 9.0)
 - **mschat.webclient** - React + TypeScript + Material-UI frontend application
 
-The authentication service provides JWT tokens, the Chat API handles all business logic, and the WebBFF serves the React SPA with minimal API surface.
+The authentication service provides JWT tokens, the Chat API handles all business logic, the Presence API tracks user status, and the WebBFF serves the React SPA with minimal API surface.
 
 ## Development Commands
 
@@ -23,7 +26,9 @@ dotnet build
 # Run individual services
 dotnet run --project MSChat.Auth
 dotnet run --project MSChat.WebBFF
-dotnet run --project MSChat.Chat
+dotnet run --project MSChat.ChatAPI
+dotnet run --project MSChat.PresenceAPI
+dotnet run --project MSChat.NotificationWorker
 
 # Run with Docker
 docker compose up
@@ -45,9 +50,12 @@ dotnet test
 
 - **MSChat.Auth**: 5000 (HTTP), 5001 (HTTPS)
 - **MSChat.WebBFF**: 5002 (HTTP), 5003 (HTTPS)
-- **MSChat.Chat**: 5004 (HTTP), 5005 (HTTPS)
+- **MSChat.ChatAPI**: 5004 (HTTP), 5005 (HTTPS), 5014 (gRPC)
+- **MSChat.PresenceAPI**: 5006 (HTTP), 5007 (HTTPS), 5016 (gRPC)
 - **React Dev Server**: 51188 (HTTPS)
 - **SQL Server**: 1433 (Docker)
+- **Redis**: 6379 (Docker)
+- **RabbitMQ**: 5672 (Docker), 15672 (Management UI)
 
 ## Key Technical Details
 
@@ -64,17 +72,14 @@ dotnet test
 
 ### Database
 - **MSChat.Auth**: SQLite database with OrchardCore schema
-- **MSChat.Chat**: SQL Server 2022 (containerized) with Entity Framework Core
+- **MSChat.ChatAPI**: SQL Server 2022 (containerized) with Entity Framework Core
 - Chat service includes: Chat, Message, ChatMember, and ChatMemberLink entities
 - Connection strings configured in docker-compose.yml
 
-## Project Structure Notes
-
-- All .NET projects use multi-stage Docker builds
-- MSChat.Auth includes extensive OrchardCore localization support (20+ languages)
-- MSChat.Chat implements full REST API with JWT authentication and Entity Framework
-- Frontend uses React 19.1.0 + Material-UI + React Query + React Router
-- Complete chat application with user management, messaging, and participants
+### Infrastructure
+- **Redis**: Caching and user presence data storage
+- **RabbitMQ**: Message queuing for background notifications
+- **gRPC**: Inter-service communication for ChatAPI and PresenceAPI
 
 ## Project-Specific Documentation
 
@@ -82,7 +87,9 @@ For detailed information about each project, see their specific CLAUDE.md files:
 
 - **[MSChat.Auth/CLAUDE.md](MSChat.Auth/CLAUDE.md)** - OrchardCore-based OpenID Connect authentication server
 - **[MSChat.WebBFF/CLAUDE.md](MSChat.WebBFF/CLAUDE.md)** - Minimal BFF serving React SPA and runtime configuration
-- **[MSChat.Chat/CLAUDE.md](MSChat.Chat/CLAUDE.md)** - Full-featured chat API with messaging, participants, and JWT auth
+- **[MSChat.ChatAPI/CLAUDE.md](MSChat.ChatAPI/CLAUDE.md)** - Full-featured chat API with messaging, participants, and JWT auth
+- **[MSChat.PresenceAPI/CLAUDE.md](MSChat.PresenceAPI/CLAUDE.md)** - User presence tracking service
+- **[MSChat.NotificationWorker/CLAUDE.md](MSChat.NotificationWorker/CLAUDE.md)** - Background notification service
 - **[mschat.webclient/CLAUDE.md](mschat.webclient/CLAUDE.md)** - React frontend with Material-UI, real-time chat interface
 
 ## Current Implementation Status
@@ -92,15 +99,20 @@ For detailed information about each project, see their specific CLAUDE.md files:
 - **Chat Management**: Create, edit, delete chats (Personal/Public types)
 - **Messaging**: Send, edit, delete messages with pagination
 - **User Management**: Member profiles, join/leave chats
+- **User Presence**: Real-time presence tracking with Redis
+- **Notifications**: Email notifications for unread messages
 - **Frontend**: Complete Material-UI interface with routing and state management
 - **Database**: SQL Server with Entity Framework migrations
 - **Deployment**: Docker Compose setup for all services
 
 ### Architecture Decisions
-- **Microservices**: Separate chat API from auth and BFF
+- **Microservices**: Separate APIs for chat, presence, and notifications
 - **Authentication**: OrchardCore for enterprise-grade OIDC
 - **Frontend**: React 19.1.0 + Material-UI for modern UI
 - **Database**: SQL Server for chat data, SQLite for auth
+- **Caching**: Redis for presence data and performance
+- **Messaging**: RabbitMQ for asynchronous notifications
+- **Communication**: gRPC for inter-service communication
 - **State Management**: React Query + Zustand for optimal performance
 
 ### Development Workflow
