@@ -19,7 +19,7 @@ public static class WebHostExtensions
             {
                 if (int.TryParse(portStr, out var port))
                 {
-                    options.Listen(IPAddress.Loopback, port);
+                    options.ListenAnyIP(port);
                 }
             }
 
@@ -29,7 +29,7 @@ public static class WebHostExtensions
             {
                 if (int.TryParse(portStr, out var port))
                 {
-                    options.Listen(IPAddress.Loopback, port, options =>
+                    options.ListenAnyIP(port, options =>
                     {
                         options.UseHttps();
                     });
