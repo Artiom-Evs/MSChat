@@ -133,6 +133,13 @@ services:
       M2MAuth__Authority: http://auth:8080
       M2MAuth__ClientId: notificationworker
       M2MAuth__ClientSecret: TopSec1!
+      Email__SmtpServer: smtp.gmail.com
+      Email__SmtpPort: 465
+      Email__Username: work.evsar@gmail.com
+      Email__Password: hhurnrxhclfuazri
+      Email__FromEmail: work.evsar@gmail.com 
+      Email__FromName: MSChat Notifications
+
 
 volumes:
   mssql_data:

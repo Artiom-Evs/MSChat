@@ -1,6 +1,5 @@
 ﻿using MSChat.Shared.Contracts;
 using MSChat.Shared.Events;
-using System.Text.Json;
 
 namespace MSChat.NotificationWorker.Services;
 
@@ -9,12 +8,16 @@ public class NotificationService : INotificationService
     private readonly Shared.Contracts.ChatAPI.ChatAPIClient _chatApiClient;
     private readonly PresenceAPI.PresenceAPIClient _presenceApiClient;
     private readonly IAuthAPIClient _authApiClient;
+    private readonly IEmailService _emailService;
+    private ILogger<NotificationService> _logger;
 
-    public NotificationService(ChatAPI.ChatAPIClient chatApiClient, PresenceAPI.PresenceAPIClient presenceApiClient, IAuthAPIClient authApiClient)
+    public NotificationService(ChatAPI.ChatAPIClient chatApiClient, PresenceAPI.PresenceAPIClient presenceApiClient, IAuthAPIClient authApiClient, IEmailService emailService, ILogger<NotificationService> logger)
     {
         _chatApiClient = chatApiClient;
         _presenceApiClient = presenceApiClient;
         _authApiClient = authApiClient;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async ValueTask NotifyUsersAsync(ChatMessageSent messageSent, CancellationToken cancellationToken = default)
@@ -30,6 +33,8 @@ public class NotificationService : INotificationService
 
         foreach (var membership in membershipsResponse.Memberships)
         {
+            if (messageSent.SenderId == membership.UserId)
+                continue;
             if (membership.LastReadMessageId >= messageSent.MessageId)
                 continue;
 
@@ -40,8 +45,20 @@ public class NotificationService : INotificationService
 
             var userInfo = await _authApiClient.GetUserInfoAsync(membership.UserId);
 
-            Console.WriteLine("Send notification for user with ID: {0}", membership.UserId);
-            Console.WriteLine(JsonSerializer.Serialize(userInfo));
+            if (userInfo == null)
+            {
+                _logger.LogWarning("failed to get info about user with ID {0}", membership.UserId);
+                continue;
+            }
+
+            await _emailService.SendUnreadMessageNotificationAsync(new UnreadMessageInfo()
+            {
+                UserEmail = userInfo.Email,
+                UserName = userInfo.Name,
+                ChatName = membership.ChatName,
+                MessageSentAt = messageSent.CreatedAt,
+            });
+            _logger.LogInformation("Notification about unread message sent to user with ID {0}", membership.UserId);
         }
     }
 }

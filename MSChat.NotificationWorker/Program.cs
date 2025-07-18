@@ -19,6 +19,12 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<EmailSettings>()
+    .BindConfiguration(EmailSettings.Position)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 var rmqSettings = builder.Configuration.GetRabbitMQSettings();
 var servicesSettings = builder.Configuration.GetServicesSettings();
 
@@ -70,9 +76,10 @@ builder.Services
         m.Add("Authorization", $"Bearer {accessToken}");
     });
 
-builder.Services.AddSingleton<INotificationService, NotificationService>();
 builder.Services.AddSingleton<IAccessTokenProvider, AccessTokenProvider>();
 builder.Services.AddSingleton<IAuthAPIClient, AuthAPIClient>();
+builder.Services.AddSingleton<INotificationService, NotificationService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 var app = builder.Build();
 
