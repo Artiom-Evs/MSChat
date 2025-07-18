@@ -23,6 +23,7 @@ public class ChatAPIService : Shared.Contracts.ChatAPI.ChatAPIBase
         var responseMemberships = memberships.Select(m => new ChatMembership()
         {
             ChatId = m.ChatId,
+            ChatName = m.ChatName,
             UserId = m.MemberId,
             LastReadMessageId = m.LastReadMessageId,
         });

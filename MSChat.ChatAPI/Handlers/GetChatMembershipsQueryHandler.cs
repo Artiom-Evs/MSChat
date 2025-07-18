@@ -22,6 +22,7 @@ public class GetChatMembershipsQueryHandler : IRequestHandler<GetChatMemberships
             .Select(cm => new ChatMembershipDto()
             {
                 ChatId = cm.ChatId,
+                ChatName = cm.Chat.Name,
                 MemberId = cm.Member.UserId,
                 LastReadMessageId = cm.LastReadedMessageId,
             })
