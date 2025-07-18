@@ -10,12 +10,14 @@ services:
     volumes:
       - mssql_data:/var/opt/mssql
 
+
   redis:
     image: redis/redis-stack:latest
     container_name: redis
     ports:
       - "6379:6379"
       - "9002:8001"
+
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -28,7 +30,8 @@ services:
       RABBITMQ_DEFAULT_PASS: password
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-  
+
+
   auth:
     build:
       context: .
@@ -37,6 +40,9 @@ services:
     ports:
       - "5000:8080"
       - "5001:8081"
+    depends_on:
+      - mssql
+
 
   webapp:
     build:
@@ -48,12 +54,16 @@ services:
       - "5003:8081"
     depends_on:
       - auth
+      - chatapi
+      - presenceapi
     environment:
-      - WebClient__OidcServerUri=http://localhost:5000
-      - WebClient__OidcClientId=mschat.webclient
-      - WebClient__ChatApiUri=http://localhost:5004
-      - WebClient__PresenceApiUri=http://localhost:5006
+      ASPNETCORE_ENVIRONMENT: Development
+      WebClient__OidcServerUri: http://localhost:5000
+      WebClient__OidcClientId: mschat.webclient
+      WebClient__ChatApiUri: http://localhost:5004
+      WebClient__PresenceApiUri: http://localhost:5006
       
+
   chatapi:
     build:
       context: .
@@ -62,17 +72,24 @@ services:
     ports:
       - "5004:8080"
       - "5005:8081"
+      - "5014:8082"
     depends_on:
-      - auth
       - mssql
       - redis
+      - rabbitmq
+      - auth
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__ChatDBConnection=Server=mssql;Database=MSChat.Chat;User Id=sa;Password=TopSec1!;Encrypt=True;TrustServerCertificate=True;
-      - ApiAuth__Authority=http://auth:8080
-      - ApiAuth__ValidIssuer=http://localhost:5000/
-      - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
-      - Redis__ConnectionString=redis:6379
+      ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Grpc__Url: http://[::]:8082
+      ConnectionStrings__ChatDBConnection: Server=mssql;Database=MSChat.Chat;User Id=sa;Password=TopSec1!;Encrypt=True;TrustServerCertificate=True;
+      ApiAuth__Authority: http://auth:8080
+      ApiAuth__ValidIssuer: http://localhost:5000/
+      Cors__AllowedOrigins: https://localhost:5100,https://localhost:5003,http://localhost:5002
+      Redis__ConnectionString: redis:6379
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: user
+      RabbitMQ__Password: password
+
 
   presenceapi:
     build:
@@ -82,15 +99,40 @@ services:
     ports:
       - "5006:8080"
       - "5007:8081"
+      - "5016:8082"
     depends_on:
-      - auth
       - redis
+      - auth
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ApiAuth__Authority=http://auth:8080
-      - ApiAuth__ValidIssuer=http://localhost:5000/
-      - Cors__AllowedOrigins=https://localhost:5100,https://localhost:5003,http://localhost:5002
-      - Redis__ConnectionString=redis:6379
+      ASPNETCORE_ENVIRONMENT: Development
+      Kestrel__Grpc__Url: http://[::]:8082
+      ApiAuth__Authority: http://auth:8080
+      ApiAuth__ValidIssuer: http://localhost:5000/
+      Cors__AllowedOrigins: https://localhost:5100,https://localhost:5003,http://localhost:5002
+      Redis__ConnectionString: redis:6379
+
+
+  nworker:
+    build:
+      context: .
+      dockerfile: ./MSChat.NotificationWorker/Dockerfile
+    container_name: nworker
+    depends_on:
+      - rabbitmq
+      - auth
+      - chatapi
+      - presenceapi
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Username: user
+      RabbitMQ__Password: password
+      Services__AuthApiUri: http://auth:8080
+      Services__ChatApiUri: http://chatapi:8082
+      Services__PresenceApiUri: http://presenceapi:8082
+      M2MAuth__Authority: http://auth:8080
+      M2MAuth__ClientId: notificationworker
+      M2MAuth__ClientSecret: TopSec1!
 
 volumes:
   mssql_data:
